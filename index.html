@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nemitech Solutions — Digital Systems & ICT Consultancy</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="%23028090"/><text x="16" y="23" font-family="Arial,sans-serif" font-size="20" font-weight="900" fill="white" text-anchor="middle">N</text></svg>">
+<link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="%23028090"/><text x="16" y="23" font-family="Arial,sans-serif" font-size="20" font-weight="900" fill="white" text-anchor="middle">N</text></svg>">
+<meta name="theme-color" content="#028090">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
@@ -17,13 +20,13 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);}
 button,a{cursor:pointer;font-family:inherit;text-decoration:none;}
 button{border:none;background:none;}
 /* ── NAV ── */
-.site-nav{background:var(--navy);padding:0 32px;display:flex;align-items:center;position:sticky;top:0;z-index:900;box-shadow:0 2px 12px rgba(0,0,0,.2);}
-.sn-logo{display:flex;align-items:center;gap:10px;padding:13px 0;margin-right:24px;flex-shrink:0;text-decoration:none;}
+.site-nav{background:var(--navy);padding:0 20px;display:flex;align-items:center;position:sticky;top:0;z-index:900;box-shadow:0 2px 12px rgba(0,0,0,.2);}
+.sn-logo{display:flex;align-items:center;gap:8px;padding:11px 0;margin-right:16px;flex-shrink:0;text-decoration:none;}
 .sn-icon{width:34px;height:34px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;}
-.sn-name{font-size:14px;font-weight:700;color:#fff;line-height:1.1;}
+.sn-name{font-size:13px;font-weight:700;color:#fff;line-height:1.1;}
 .sn-sub{font-size:8px;color:var(--mint);letter-spacing:1px;}
 .sn-links{display:flex;flex:1;}
-.sn-link{padding:16px 14px;font-size:11px;color:rgba(255,255,255,.6);cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;white-space:nowrap;}
+.sn-link{padding:14px 10px;font-size:10.5px;color:rgba(255,255,255,.6);cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;white-space:nowrap;}
 .sn-link.active{color:#fff;border-bottom-color:var(--mint);font-weight:700;}
 .sn-link:hover{color:#fff;}
 /* ── DROPDOWN ── */
@@ -40,8 +43,8 @@ button{border:none;background:none;}
 .sn-dropdown-item .di-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
 .sn-dropdown-item .di-label{font-weight:600;}
 .sn-dropdown-item .di-sub{font-size:10px;color:var(--lt);margin-top:1px;}
-.sn-btns{display:flex;gap:8px;margin-left:auto;}
-.sn-btn{padding:8px 16px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;}
+.sn-btns{display:flex;gap:6px;margin-left:auto;flex-shrink:0;}
+.sn-btn{padding:7px 13px;border-radius:7px;font-size:10.5px;font-weight:600;cursor:pointer;}
 /* ── PAGES ── */
 .page{display:none;}
 .page.active{display:block;}
@@ -110,6 +113,11 @@ button{border:none;background:none;}
 /* ── PORTFOLIO ── */
 .portfolio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px;}
 .port-card{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .15s;}
+.port-logo-thumb{height:130px;display:flex;align-items:center;justify-content:center;background:#fff;border-bottom:1px solid var(--border);padding:16px;overflow:hidden;}
+.port-logo-thumb img{max-width:100%;max-height:90px;object-fit:contain;}
+.port-initials{height:130px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;}
+.port-initials .pi-badge{font-size:36px;font-weight:900;line-height:1;}
+.port-initials .pi-name{font-size:10px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:1px;}
 .port-card:hover{box-shadow:0 8px 24px rgba(0,0,0,.1);transform:translateY(-2px);}
 .port-thumb{height:130px;display:flex;align-items:center;justify-content:center;font-size:48px;position:relative;overflow:hidden;}
 .port-body{padding:14px 16px;}
@@ -220,8 +228,8 @@ button{border:none;background:none;}
     <div class="sn-link" data-page="contact" onclick="showPage('contact',this)">Contact Us</div>
   </div>
   <div class="sn-btns">
-    <button class="sn-btn" style="background:transparent;border:1px solid rgba(255,255,255,.3);color:#fff;" onclick="openModal('modal-quote')">Get a Quote</button>
-    <button class="sn-btn" style="background:var(--teal);color:#fff;border:none;" onclick="openModal('modal-project')">Start a Project →</button>
+    <button class="sn-btn" style="background:transparent;border:1px solid rgba(255,255,255,.3);color:#fff;" onclick="openModal('modal-quote',event)">Get a Quote</button>
+    <button class="sn-btn" style="background:var(--teal);color:#fff;border:none;" onclick="openModal('modal-project',event)">Start a Project →</button>
   </div>
 </nav>
 
@@ -245,7 +253,7 @@ button{border:none;background:none;}
       <div class="hero-right">
         <div class="hero-stats">
           <div class="stat-box"><div class="stat-val" style="color:var(--mint)">10+</div><div class="stat-lbl">Live Projects Delivered</div></div>
-          <div class="stat-box"><div class="stat-val" style="color:var(--amber)">5+</div><div class="stat-lbl">Government Clients</div></div>
+          <div class="stat-box"><div class="stat-val" style="color:var(--amber)">5+</div><div class="stat-lbl">Enterprise Clients</div></div>
           <div class="stat-box"><div class="stat-val" style="color:var(--mint)">47</div><div class="stat-lbl">Counties Reached</div></div>
           <div class="stat-box"><div class="stat-val" style="color:var(--amber)">100%</div><div class="stat-lbl">Client Satisfaction</div></div>
         </div>
@@ -377,7 +385,7 @@ button{border:none;background:none;}
         <div class="cta-sub">Whether you are a government agency, professional association, county government, or private enterprise — Nemitech Solutions will deliver a platform that works. Let's talk.</div>
       </div>
       <div style="display:flex;gap:10px;flex-shrink:0">
-        <button class="btn btn-white" onclick="openModal('modal-quote')">Get a Free Quote →</button>
+        <button class="btn btn-white" onclick="openModal('modal-quote',event)">Get a Free Quote →</button>
         <button class="btn" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);color:#fff;" onclick="showPage('portfolio')">See Our Work</button>
       </div>
     </div>
@@ -531,7 +539,7 @@ button{border:none;background:none;}
         <div class="cta-title">Partner with a Team That Understands Kenya</div>
         <div class="cta-sub">Government processes, M-Pesa flows, county devolution, agricultural digital platforms — we have built it, lived it, and we will build it for you.</div>
       </div>
-      <button class="btn btn-white" onclick="openModal('modal-project')">Start a Conversation →</button>
+      <button class="btn btn-white" onclick="openModal('modal-project',event)">Start a Conversation →</button>
     </div>
   </div>
   <footer class="site-footer">
@@ -622,12 +630,6 @@ button{border:none;background:none;}
         <div class="svc-tags"><span class="svc-tag">AgriTech</span><span class="svc-tag">AgriTech</span><span class="svc-tag">Kenya</span></div>
         <div style="margin-top:14px;font-size:11px;color:var(--teal);font-weight:600">Learn more →</div>
       </div>
-      <div class="service-card" onclick="showPage('svc-cctv')">
-        <div class="svc-icon" style="background:#F3E8FF">📷</div>
-        <div class="svc-title">CCTV, Networking & Supplies</div>
-        <div class="svc-desc">CCTV installation, structured network cabling, Wi-Fi setup, and ICT equipment supply for offices, institutions, and commercial premises.</div>
-        <div class="svc-tags"><span class="svc-tag">CCTV</span><span class="svc-tag">Networking</span><span class="svc-tag">Supplies</span></div>
-      </div>
       <div class="service-card" onclick="showPage('svc-cloud')">
         <div class="svc-icon" style="background:var(--mintLt)">☁️</div>
         <div class="svc-title">Cloud Hosting & Infrastructure</div>
@@ -655,7 +657,7 @@ button{border:none;background:none;}
         <div class="cta-title">Not sure which service you need?</div>
         <div class="cta-sub">Tell us your challenge and we will recommend the right solution. All projects start with a free discovery call.</div>
       </div>
-      <button class="btn btn-white" onclick="openModal('modal-project')">Get a Free Consultation →</button>
+      <button class="btn btn-white" onclick="openModal('modal-project',event)">Get a Free Consultation →</button>
     </div>
   </div>
   <footer class="site-footer">
@@ -747,7 +749,7 @@ button{border:none;background:none;}
           <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">Starting from</div>
           <div style="font-size:36px;font-weight:800;color:var(--mint)">KES 80,000</div>
           <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:5px;margin-bottom:20px">5-page corporate website · CMS · SSL · Mobile responsive</div>
-          <button class="btn btn-white" style="width:100%" onclick="openModal('modal-quote')">Request a Quote →</button>
+          <button class="btn btn-white" style="width:100%" onclick="openModal('modal-quote',event)">Request a Quote →</button>
         </div>
         <div class="card">
           <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:12px">⏱ Typical Timeline</div>
@@ -880,7 +882,7 @@ button{border:none;background:none;}
           <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">Starting from</div>
           <div style="font-size:36px;font-weight:800;color:var(--mint)">KES 350,000</div>
           <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:5px;margin-bottom:20px">Portal + Payments + Dashboard + Training + 6-month support</div>
-          <button class="btn btn-white" style="width:100%" onclick="openModal('modal-quote')">Request a Quote →</button>
+          <button class="btn btn-white" style="width:100%" onclick="openModal('modal-quote',event)">Request a Quote →</button>
         </div>
         <div class="card">
           <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:12px">📦 What's Included</div>
@@ -1007,7 +1009,7 @@ button{border:none;background:none;}
           <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">Starting from</div>
           <div style="font-size:36px;font-weight:800;color:var(--mint)">KES 400,000</div>
           <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:5px;margin-bottom:20px">Android + iOS · All modules · Published to both stores</div>
-          <button class="btn btn-white" style="width:100%" onclick="openModal('modal-quote')">Request a Quote →</button>
+          <button class="btn btn-white" style="width:100%" onclick="openModal('modal-quote',event)">Request a Quote →</button>
         </div>
         <div class="card">
           <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px">⏱ 14-Week Timeline</div>
@@ -1126,15 +1128,15 @@ button{border:none;background:none;}
           <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">Custom Scoping</div>
           <div style="font-size:28px;font-weight:800;color:var(--mint)">Request a Quote</div>
           <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:5px;margin-bottom:20px">Scoped to your programme, target farmers, county reach, and donor requirements</div>
-          <button class="btn btn-white" style="width:100%" onclick="openModal('modal-project')">Discuss Your Project →</button>
+          <button class="btn btn-white" style="width:100%" onclick="openModal('modal-project',event)">Discuss Your Project →</button>
         </div>
         <div class="card" style="background:var(--navy);border:none">
           <div style="font-size:12px;font-weight:700;color:var(--mint);margin-bottom:10px">🏛️ Our Government AgriTech Clients</div>
           <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ Agricultural Institution — Nairobi</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ agricultural research institutions — Kenya Agricultural & Livestock Research Organisation</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ development partners agricultural digital programmes Programme</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ agricultural development programmes — Naivasha, Nyeri, Meru</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.7)">✓ food systems programmes — Food Systems Resilience Programme</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ Agricultural research institutions — Kenya</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ Development partners & donor programmes</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ Agri-value chain programmes — Naivasha, Nyeri, Meru</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7)">✓ Food systems & resilience programmes</div>
         </div>
         <div class="card" style="border-left:4px solid var(--green)">
           <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px">🔗 Aligned Standards</div>
@@ -1260,7 +1262,7 @@ button{border:none;background:none;}
           <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:8px">⚠️ The Cost of Poor Hosting</div>
           <div style="font-size:11px;color:var(--mid);line-height:1.7">A single payment failure during a membership drive can cost KES 30,000–150,000 in lost fees. A data breach without SSL can expose member data and trigger legal liability of KES 500,000+. Good hosting is your cheapest insurance.</div>
         </div>
-        <button class="btn btn-teal" style="width:100%" onclick="openModal('modal-quote')">Get Hosting Quote →</button>
+        <button class="btn btn-teal" style="width:100%" onclick="openModal('modal-quote',event)">Get Hosting Quote →</button>
       </div>
     </div>
   </div>
@@ -1373,7 +1375,7 @@ button{border:none;background:none;}
           <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">Starting from</div>
           <div style="font-size:36px;font-weight:800;color:#C4B5FD">KES 45,000</div>
           <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:5px;margin-bottom:20px">4-camera CCTV system · supply, installation & configuration</div>
-          <button class="btn btn-white" style="width:100%" onclick="openModal('modal-quote')">Request a Quote →</button>
+          <button class="btn btn-white" style="width:100%" onclick="openModal('modal-quote',event)">Request a Quote →</button>
         </div>
         <div class="card">
           <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:12px">📦 CCTV Package Options</div>
@@ -1417,6 +1419,53 @@ button{border:none;background:none;}
       </div>
     </div>
   </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:32px;height:32px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">💻</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#fff">Nemitech Solutions</div>
+            <div style="font-size:8px;color:var(--mint);letter-spacing:.8px">DIGITAL SYSTEMS & ICT CONSULTANCY</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);line-height:1.8;max-width:280px">Building institutions for a digital Kenya. Delivering ICT, digital systems, networking, and CCTV solutions to associations, enterprises, and institutions since 2022.</div>
+        <div class="social-pills">
+          <div class="social-pill">LinkedIn</div>
+          <div class="social-pill">Twitter/X</div>
+          <div class="social-pill">Facebook</div>
+        </div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Services</div>
+        <div class="footer-link" onclick="showPage('svc-web')">Web Development</div>
+        <div class="footer-link" onclick="showPage('svc-portal')">Member Portals & Software</div>
+        <div class="footer-link" onclick="showPage('svc-mobile')">Mobile App Development</div>
+        <div class="footer-link" onclick="showPage('svc-agri')">Digital Agriculture</div>
+        <div class="footer-link" onclick="showPage('svc-cloud')">Cloud Hosting</div>
+        <div class="footer-link" onclick="showPage('svc-cctv')">CCTV & Networking</div>
+        <div class="footer-link" onclick="showPage('svc-ict')">ICT Consultancy</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Company</div>
+        <div class="footer-link" onclick="showPage('about')">About Us</div>
+        <div class="footer-link" onclick="showPage('portfolio')">Portfolio</div>
+        <div class="footer-link" onclick="showPage('team')">Our Team</div>
+        <div class="footer-link" onclick="showPage('contact')">Contact Us</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Contact</div>
+        <div class="footer-link">📧 nemaeri@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📧 info@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📞 +254 710 652544</div>
+        <div class="footer-link">📍 Nairobi, Kenya</div>
+        <div class="footer-link">🌐 www.nemitech.co.ke</div>
+      </div>
+    </div>
+    <div class="footer-copy">© 2025 Nemitech Solutions · Digital Systems & ICT Consultancy · Nairobi, Kenya · All rights reserved</div>
+  </footer>
+</div>
 
 <!-- ══════════════════════════════════════
      SERVICE 6: ICT CONSULTANCY
@@ -1464,16 +1513,16 @@ button{border:none;background:none;}
           <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">Engagement-Based Pricing</div>
           <div style="font-size:28px;font-weight:800;color:var(--amber)">Request a Proposal</div>
           <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:5px;margin-bottom:20px">Day-rate, retainer, and project-based options available</div>
-          <button class="btn btn-white" style="width:100%" onclick="openModal('modal-project')">Request Consultation →</button>
+          <button class="btn btn-white" style="width:100%" onclick="openModal('modal-project',event)">Request Consultation →</button>
         </div>
         <div class="card" style="background:var(--navy);border:none">
           <div style="font-size:12px;font-weight:700;color:var(--mint);margin-bottom:12px">🏛️ Institutional Clients Served</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ Agricultural Institution — Nairobi (agricultural institutions)</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ Kenya Agricultural & Livestock Research Organisation (agricultural research institutions)</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ development partners agricultural digital programmes Programme</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ agricultural development programmes — Naivasha Area Value Chain Development</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ national data systems — Kenya Integrated Agricultural MIS</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.7)">✓ International Innovation Days 2026</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ Agricultural institutions — Nairobi</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ Agricultural research organisations</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ Development partners & donor programmes</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ Agri-value chain development programmes</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ National agricultural data & MIS bodies</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7)">✓ International digital innovation programmes</div>
         </div>
         <div class="card" style="border-left:4px solid var(--amber)">
           <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px">📖 Academic Grounding</div>
@@ -1552,7 +1601,10 @@ button{border:none;background:none;}
     <div class="portfolio-grid">
 
       <div class="port-card" data-cat="Association" onclick="alert('KAHA Digital Platform\n\nFull-stack web application for the Kenya Association of Health Administrators including member portal, M-Pesa payment, digital certificates, admin dashboard, and Mobile App (Phase 2).')">
-        <div class="port-thumb" style="background:linear-gradient(135deg,#4A1A2B,#8B1A3A)"><span style="font-size:52px">🏥</span></div>
+        <div class="port-initials" style="background:linear-gradient(135deg,#4A1A2B,#8B1A3A)">
+          <div class="pi-badge" style="color:#fff;font-size:42px">🏥</div>
+          <div class="pi-name">KENYA ASSOC. OF HEALTH ADMINISTRATORS</div>
+        </div>
         <div class="port-body">
           <div class="port-title">KAHA Digital Platform</div>
           <div class="port-client">Kenya Association of Health Administrators</div>
@@ -1571,32 +1623,35 @@ button{border:none;background:none;}
         </div>
       </div>
 
-      <div class="port-card" data-cat="Agriculture" onclick="alert('National Cassava Programme\n\nNational platform for Kenya\'s cassava development programme.\n\nURL: nationalcassava.vetclinic-mrd.com')">
-        <div class="port-thumb" style="background:linear-gradient(135deg,#1A3A2A,#2A7A4A)"><span style="font-size:52px">🌱</span></div>
+      <div class="port-card" data-cat="Agriculture" onclick="window.open('https://nationalcassava.vetclinic-mrd.com','_blank')">
+        <div class="port-logo-thumb"><img src="https://cassava.vetclinic-mrd.com/wp-content/uploads/2023/08/expo-logo-1.jpeg" alt="National Cassava Logo" onerror="var p=this.parentElement;p.innerHTML='<span style=\'font-size:52px\'>🌱</span>'"></div>
         <div class="port-body">
           <div class="port-title">National Cassava Programme</div>
           <div class="port-client">National Cassava Development Programme</div>
-          <div style="font-size:10px;color:var(--teal);margin-bottom:8px">nationalcassava.vetclinic-mrd.com</div>
+          <div style="font-size:10px;color:var(--teal);margin-bottom:8px">nationalcassava.vetclinic-mrd.com ↗</div>
           <div class="port-tags"><span class="badge" style="background:var(--greenLt);color:var(--green)">Agriculture</span><span class="badge" style="background:var(--amberLt);color:var(--amber)">Government</span></div>
         </div>
       </div>
 
-      <div class="port-card" data-cat="Private Agriculture" onclick="alert('AgroVet Platform\n\nVeterinary products and services platform for agrovet dealers.\n\nURL: agrovet.vetclinic-mrd.com')">
-        <div class="port-thumb" style="background:linear-gradient(135deg,#1A2A3A,#2A5A7A)"><span style="font-size:52px">💊</span></div>
+      <div class="port-card" data-cat="Private Agriculture" onclick="window.open('https://agrovet.vetclinic-mrd.com','_blank')">
+        <div class="port-initials" style="background:linear-gradient(135deg,#1A2A3A,#2A5A7A)">
+          <div class="pi-badge" style="color:#fff;font-size:22px;font-weight:900;letter-spacing:-1px">AGROVET</div>
+          <div class="pi-name">FARMS</div>
+        </div>
         <div class="port-body">
           <div class="port-title">AgroVet Digital Platform</div>
           <div class="port-client">AgroVet MRD Network</div>
-          <div style="font-size:10px;color:var(--teal);margin-bottom:8px">agrovet.vetclinic-mrd.com</div>
+          <div style="font-size:10px;color:var(--teal);margin-bottom:8px">agrovet.vetclinic-mrd.com ↗</div>
           <div class="port-tags"><span class="badge" style="background:var(--mintLt);color:var(--teal)">Private</span><span class="badge" style="background:var(--greenLt);color:var(--green)">AgriTech</span></div>
         </div>
       </div>
 
-      <div class="port-card" data-cat="Private" onclick="alert('Tehila Realtors Platform\n\nReal estate listings and property management platform.\n\nURL: tehilarealtors.vetclinic-mrd.com')">
-        <div class="port-thumb" style="background:linear-gradient(135deg,#2A1A1A,#6A2A2A)"><span style="font-size:52px">🏠</span></div>
+      <div class="port-card" data-cat="Private" onclick="window.open('https://tehilarealtors.vetclinic-mrd.com','_blank')">
+        <div class="port-logo-thumb"><img src="https://tehilarealtors.vetclinic-mrd.com/wp-content/uploads/2022/05/logo.png" alt="Tehila Realtors Logo" onerror="var p=this.parentElement;p.innerHTML='<span style=\'font-size:52px\'>🏠</span>'"></div>
         <div class="port-body">
           <div class="port-title">Tehila Realtors Platform</div>
-          <div class="port-client">Tehila Realtors</div>
-          <div style="font-size:10px;color:var(--teal);margin-bottom:8px">tehilarealtors.vetclinic-mrd.com</div>
+          <div class="port-client">Tehillah Realtors Limited</div>
+          <div style="font-size:10px;color:var(--teal);margin-bottom:8px">tehilarealtors.vetclinic-mrd.com ↗</div>
           <div class="port-tags"><span class="badge" style="background:var(--amberLt);color:var(--amber)">Private</span><span class="badge" style="background:#EFF4FF;color:#2563EB">Real Estate</span></div>
         </div>
       </div>
@@ -1608,7 +1663,7 @@ button{border:none;background:none;}
         <div class="cta-title">Have a Project in Mind?</div>
         <div class="cta-sub">We would love to add your platform to this portfolio. Tell us what you need and we will deliver it — on time, within budget, and built to last.</div>
       </div>
-      <button class="btn btn-white" onclick="openModal('modal-project')">Start Your Project →</button>
+      <button class="btn btn-white" onclick="openModal('modal-project',event)">Start Your Project →</button>
     </div>
   </div>
   <footer class="site-footer">
@@ -1779,23 +1834,23 @@ button{border:none;background:none;}
 
     <!-- 3 WAYS TO REACH US -->
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:36px">
-      <div class="card" style="text-align:center;border-top:4px solid var(--teal);cursor:pointer" onclick="openModal('modal-contact')">
+      <div class="card" style="text-align:center;border-top:4px solid var(--teal);cursor:pointer" onclick="openModal('modal-contact',event)">
         <div style="font-size:36px;margin-bottom:12px">💬</div>
         <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:6px">Send a Message</div>
         <div style="font-size:11px;color:var(--mid);line-height:1.6;margin-bottom:16px">General enquiries, support questions, or just want to say hello? Reach our team directly.</div>
-        <button class="btn btn-outline btn-sm" style="width:100%" onclick="openModal('modal-contact')">Open Form →</button>
+        <button class="btn btn-outline btn-sm" style="width:100%" onclick="openModal('modal-contact',event)">Open Form →</button>
       </div>
-      <div class="card" style="text-align:center;border-top:4px solid var(--amber);cursor:pointer" onclick="openModal('modal-quote')">
+      <div class="card" style="text-align:center;border-top:4px solid var(--amber);cursor:pointer" onclick="openModal('modal-quote',event)">
         <div style="font-size:36px;margin-bottom:12px">💰</div>
         <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:6px">Get a Quote</div>
         <div style="font-size:11px;color:var(--mid);line-height:1.6;margin-bottom:16px">Know what you need? Tell us your service, budget, and timeline and we will send a detailed quote.</div>
-        <button class="btn btn-sm" style="width:100%;background:var(--amber);color:#fff;border:none" onclick="openModal('modal-quote')">Request Quote →</button>
+        <button class="btn btn-sm" style="width:100%;background:var(--amber);color:#fff;border:none" onclick="openModal('modal-quote',event)">Request Quote →</button>
       </div>
-      <div class="card" style="text-align:center;border-top:4px solid var(--teal);cursor:pointer" onclick="openModal('modal-project')">
+      <div class="card" style="text-align:center;border-top:4px solid var(--teal);cursor:pointer" onclick="openModal('modal-project',event)">
         <div style="font-size:36px;margin-bottom:12px">🚀</div>
         <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:6px">Start a Project</div>
         <div style="font-size:11px;color:var(--mid);line-height:1.6;margin-bottom:16px">Ready to begin? Share your full project brief and we will schedule a discovery call within 48 hours.</div>
-        <button class="btn btn-teal btn-sm" style="width:100%" onclick="openModal('modal-project')">Brief Us →</button>
+        <button class="btn btn-teal btn-sm" style="width:100%" onclick="openModal('modal-project',event)">Brief Us →</button>
       </div>
     </div>
 
@@ -1895,6 +1950,7 @@ function showPage(pageId, linkEl) {
 function toggleDropdown(e) {
   e.stopPropagation();
   const dd = e.target.closest('.sn-dropdown');
+  if(!dd) return;
   const isOpen = dd.classList.contains('open');
   document.querySelectorAll('.sn-dropdown').forEach(d => d.classList.remove('open'));
   if(!isOpen) dd.classList.add('open');
@@ -1912,42 +1968,51 @@ function filterPort(pillEl, cat) {
 }
 
 // ── MODAL SYSTEM ──────────────────────────────────────────────────
-function openModal(id) {
-  document.querySelectorAll('.nt-modal-overlay').forEach(m => m.style.display = 'none');
+let _modalOpen = false;
+function openModal(id, e) {
+  if(e) e.stopPropagation();
+  if(_modalOpen) return;
+  _modalOpen = true;
+  setTimeout(()=>{ _modalOpen = false; }, 300);
+  document.querySelectorAll('.nt-modal-overlay').forEach(m => { if(m) m.style.display = 'none'; });
   const m = document.getElementById(id);
-  if(m){ m.style.display = 'flex'; document.body.style.overflow='hidden'; }
+  if(m){ m.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
 }
 function closeModal(id) {
   const m = document.getElementById(id);
-  if(m){ m.style.display = 'none'; document.body.style.overflow=''; }
+  if(m){ m.style.display = 'none'; document.body.style.overflow = ''; }
 }
-document.addEventListener('keydown', e => { if(e.key==='Escape') { document.querySelectorAll('.nt-modal-overlay').forEach(m=>m.style.display='none'); document.body.style.overflow=''; }});
+document.addEventListener('keydown', e => {
+  if(e.key==='Escape'){
+    document.querySelectorAll('.nt-modal-overlay').forEach(m => { if(m) m.style.display='none'; });
+    document.body.style.overflow = '';
+  }
+});
 
 // ── FORM SUBMISSION via Formspree ─────────────────────────────────
 async function submitForm(formId, successMsg) {
   const form = document.getElementById(formId);
+  if(!form) return;
   const inputs = form.querySelectorAll('[required]');
   let valid = true;
   inputs.forEach(inp => {
-    if(!inp.value.trim()){ inp.style.borderColor='var(--red)'; valid=false; }
-    else inp.style.borderColor='';
+    if(!inp.value.trim()){ inp.style.borderColor = 'var(--red)'; valid = false; }
+    else inp.style.borderColor = '';
   });
   if(!valid){ alert('Please fill in all required fields before submitting.'); return; }
 
   const btn = form.querySelector('button[type="submit"]');
-  const origText = btn.textContent;
-  btn.textContent = 'Sending...'; btn.disabled = true;
+  const origText = btn ? btn.textContent : '';
+  if(btn){ btn.textContent = 'Sending...'; btn.disabled = true; }
 
-  // Collect all form data into email body for mailto fallback
   const data = new FormData(form);
   let body = '';
-  for(let [k,v] of data.entries()) body += k+': '+v+'\n';
+  for(let [k,v] of data.entries()) body += k + ': ' + v + '\n';
 
-  // Try Formspree first
   try {
     const res = await fetch(form.action, {
-      method:'POST', body: data,
-      headers:{'Accept':'application/json'}
+      method: 'POST', body: data,
+      headers: { 'Accept': 'application/json' }
     });
     if(res.ok){
       showSuccess(formId, successMsg);
@@ -1955,22 +2020,23 @@ async function submitForm(formId, successMsg) {
     } else {
       fallbackMailto(form, body);
     }
-  } catch(e) {
+  } catch(err) {
     fallbackMailto(form, body);
   }
-  btn.textContent = origText; btn.disabled = false;
+  if(btn){ btn.textContent = origText; btn.disabled = false; }
 }
 
 function showSuccess(formId, msg) {
   const form = document.getElementById(formId);
-  const success = form.parentElement.querySelector('.form-success');
-  if(success){ success.style.display='block'; form.style.display='none'; }
+  if(!form) return;
+  const success = form.parentElement ? form.parentElement.querySelector('.form-success') : null;
+  if(success){ success.style.display = 'block'; form.style.display = 'none'; }
 }
 
 function fallbackMailto(form, body) {
-  const subject = encodeURIComponent('Nemitech Solutions Enquiry — '+document.title);
+  const subject = encodeURIComponent('Nemitech Solutions Enquiry — ' + document.title);
   const mailbody = encodeURIComponent(body);
-  window.location.href = 'mailto:info@nemitechsolutions.co.ke?subject='+subject+'&body='+mailbody;
+  window.location.href = 'mailto:info@nemitechsolutions.co.ke?subject=' + subject + '&body=' + mailbody;
 }
 </script>
 
