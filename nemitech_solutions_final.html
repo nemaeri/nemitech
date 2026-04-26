@@ -1,0 +1,2186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nemitech Solutions — Digital Systems & ICT Consultancy</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#1A2B4A; --navyDk:#0F1E30; --teal:#028090; --mint:#02C39A;
+  --amber:#F4A261; --red:#E24C4C; --green:#1E9E6E;
+  --white:#fff; --bg:#F0F5F7; --border:#E2EBF0;
+  --text:#1A2B4A; --mid:#4A6274; --lt:#8AA0AD;
+  --mintLt:#D0F5EC; --amberLt:#FEF0E3; --redLt:#FEECEC; --greenLt:#E2F5EF;
+}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);}
+button,a{cursor:pointer;font-family:inherit;text-decoration:none;}
+button{border:none;background:none;}
+/* ── NAV ── */
+.site-nav{background:var(--navy);padding:0 32px;display:flex;align-items:center;position:sticky;top:0;z-index:900;box-shadow:0 2px 12px rgba(0,0,0,.2);}
+.sn-logo{display:flex;align-items:center;gap:10px;padding:13px 0;margin-right:24px;flex-shrink:0;text-decoration:none;}
+.sn-icon{width:34px;height:34px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.sn-name{font-size:14px;font-weight:700;color:#fff;line-height:1.1;}
+.sn-sub{font-size:8px;color:var(--mint);letter-spacing:1px;}
+.sn-links{display:flex;flex:1;}
+.sn-link{padding:16px 14px;font-size:11px;color:rgba(255,255,255,.6);cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;white-space:nowrap;}
+.sn-link.active{color:#fff;border-bottom-color:var(--mint);font-weight:700;}
+.sn-link:hover{color:#fff;}
+/* ── DROPDOWN ── */
+.sn-dropdown{position:relative;display:flex;align-items:stretch;}
+.sn-dropdown:hover .sn-dropdown-menu,.sn-dropdown.open .sn-dropdown-menu{display:block;}
+.sn-dropdown:hover > .sn-link,.sn-dropdown.open > .sn-link{color:#fff;border-bottom-color:var(--mint);}
+.sn-dropdown-trigger{display:flex;align-items:center;gap:4px;}
+.sn-dropdown-trigger::after{content:'▾';font-size:10px;}
+.sn-dropdown-menu{display:none;position:absolute;top:100%;left:0;background:#fff;border-radius:0 10px 10px 10px;box-shadow:0 12px 40px rgba(0,0,0,.18);min-width:230px;z-index:1000;border:1px solid var(--border);overflow:hidden;animation:fadeDown .15s ease;}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+.sn-dropdown-item{padding:12px 18px;font-size:12px;color:var(--navy);cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);transition:background .12s;}
+.sn-dropdown-item:last-child{border-bottom:none;}
+.sn-dropdown-item:hover{background:var(--mintLt);color:var(--teal);}
+.sn-dropdown-item .di-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.sn-dropdown-item .di-label{font-weight:600;}
+.sn-dropdown-item .di-sub{font-size:10px;color:var(--lt);margin-top:1px;}
+.sn-btns{display:flex;gap:8px;margin-left:auto;}
+.sn-btn{padding:8px 16px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;}
+/* ── PAGES ── */
+.page{display:none;}
+.page.active{display:block;}
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 20px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;border:none;}
+.btn-teal{background:var(--teal);color:#fff;}
+.btn-teal:hover{background:#039AAD;}
+.btn-navy{background:var(--navy);color:#fff;}
+.btn-outline{background:transparent;border:2px solid var(--teal);color:var(--teal);}
+.btn-outline:hover{background:var(--mintLt);}
+.btn-sm{padding:6px 14px;font-size:11px;}
+.btn-white{background:#fff;color:var(--teal);font-weight:700;}
+.btn-white:hover{background:var(--mintLt);}
+/* ── SHARED ── */
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:9px;font-weight:700;}
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;font-weight:600;color:var(--text);margin-bottom:5px;}
+.field input,.field select,.field textarea{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--text);font-family:inherit;transition:border .15s;}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--teal);}
+/* ── HERO ── */
+.hero{background:linear-gradient(135deg,#0F1E30 0%,#1A2B4A 45%,#028090 100%);padding:64px 32px;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;top:-100px;right:-100px;width:500px;height:500px;background:rgba(2,195,154,.05);border-radius:50%;}
+.hero::after{content:'';position:absolute;bottom:-80px;left:-80px;width:380px;height:380px;background:rgba(255,255,255,.03);border-radius:50%;}
+.hero-inner{max-width:1100px;margin:0 auto;display:flex;gap:56px;align-items:center;position:relative;z-index:1;}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(2,195,154,.15);border:1px solid rgba(2,195,154,.3);border-radius:20px;padding:5px 16px;font-size:10px;color:var(--mint);font-weight:600;margin-bottom:16px;letter-spacing:.5px;}
+.hero-title{font-size:40px;font-weight:800;color:#fff;line-height:1.1;margin-bottom:16px;}
+.hero-title span{color:var(--mint);}
+.hero-sub{font-size:14px;color:rgba(255,255,255,.65);line-height:1.8;margin-bottom:28px;max-width:460px;}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap;}
+.hero-right{flex-shrink:0;}
+.hero-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.stat-box{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:18px 20px;backdrop-filter:blur(4px);}
+.stat-val{font-size:28px;font-weight:800;line-height:1;}
+.stat-lbl{font-size:10px;color:rgba(255,255,255,.55);margin-top:5px;}
+/* ── FEATURES BAR ── */
+.feat-bar{background:var(--teal);padding:0 32px;}
+.feat-inner{max-width:1100px;margin:0 auto;display:flex;}
+.feat-item{flex:1;padding:16px 18px;border-right:1px solid rgba(255,255,255,.15);display:flex;gap:12px;align-items:center;}
+.feat-item:last-child{border-right:none;}
+.feat-icon{font-size:22px;}
+.feat-t{font-size:11px;font-weight:700;color:#fff;}
+.feat-d{font-size:9px;color:rgba(255,255,255,.7);margin-top:2px;}
+/* ── PAGE HEADER ── */
+.page-hdr{background:linear-gradient(135deg,var(--navy),var(--teal));padding:36px 32px;}
+.page-hdr-inner{max-width:1100px;margin:0 auto;}
+.breadcrumb{font-size:11px;color:var(--mint);margin-bottom:7px;}
+.page-hdr-title{font-size:28px;font-weight:800;color:#fff;}
+.page-hdr-sub{font-size:13px;color:rgba(255,255,255,.6);margin-top:6px;}
+/* ── BODY ── */
+.body-wrap{max-width:1100px;margin:0 auto;padding:36px 32px;}
+/* ── SECTION TITLES ── */
+.section-label{font-size:11px;color:var(--teal);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;}
+.section-title{font-size:26px;font-weight:800;color:var(--navy);margin-bottom:10px;line-height:1.2;}
+.section-sub{font-size:13px;color:var(--mid);line-height:1.7;max-width:600px;}
+/* ── SERVICE CARDS ── */
+.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:28px;}
+.service-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:22px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden;}
+.service-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--teal);}
+.service-card:hover{border-color:var(--teal);box-shadow:0 8px 24px rgba(2,128,144,.12);transform:translateY(-2px);}
+.svc-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:14px;}
+.svc-title{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px;}
+.svc-desc{font-size:11px;color:var(--mid);line-height:1.7;}
+.svc-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:12px;}
+.svc-tag{padding:3px 8px;background:var(--mintLt);border-radius:10px;font-size:9px;color:var(--teal);font-weight:600;}
+/* ── PORTFOLIO ── */
+.portfolio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px;}
+.port-card{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .15s;}
+.port-card:hover{box-shadow:0 8px 24px rgba(0,0,0,.1);transform:translateY(-2px);}
+.port-thumb{height:130px;display:flex;align-items:center;justify-content:center;font-size:48px;position:relative;overflow:hidden;}
+.port-body{padding:14px 16px;}
+.port-title{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px;}
+.port-client{font-size:10px;color:var(--mid);margin-bottom:8px;}
+.port-tags{display:flex;gap:5px;flex-wrap:wrap;}
+/* ── NEWS / BLOG ── */
+.news-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;cursor:pointer;transition:box-shadow .15s;margin-bottom:14px;}
+.news-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08);}
+.news-accent{width:5px;flex-shrink:0;}
+.news-body{flex:1;padding:16px 18px;}
+.news-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.news-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px;}
+.news-excerpt{font-size:11px;color:var(--mid);line-height:1.6;}
+/* ── TEAM ── */
+.team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:28px;}
+.team-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:22px;text-align:center;cursor:pointer;transition:all .15s;}
+.team-card:hover{border-color:var(--teal);box-shadow:0 6px 20px rgba(0,0,0,.08);}
+.team-avatar{width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 12px;border:3px solid var(--border);}
+.team-name{font-size:13px;font-weight:700;color:var(--navy);}
+.team-role{font-size:10px;color:var(--teal);font-weight:600;margin:3px 0 8px;}
+.team-bio{font-size:10px;color:var(--mid);line-height:1.6;}
+/* ── CTA BANNER ── */
+.cta-banner{background:linear-gradient(135deg,var(--navy),var(--teal));border-radius:16px;padding:40px 48px;display:flex;gap:32px;align-items:center;margin:40px 0;}
+.cta-text{flex:1;}
+.cta-title{font-size:22px;font-weight:800;color:#fff;margin-bottom:8px;}
+.cta-sub{font-size:12px;color:rgba(255,255,255,.7);line-height:1.7;}
+/* ── CONTACT ── */
+.contact-grid{display:grid;grid-template-columns:2fr 1fr;gap:24px;}
+.contact-info-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;gap:14px;align-items:center;margin-bottom:10px;}
+.contact-icon{width:42px;height:42px;background:var(--mintLt);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+/* ── FOOTER ── */
+.site-footer{background:var(--navyDk);padding:40px 32px 20px;}
+.footer-inner{max-width:1100px;margin:0 auto;display:flex;gap:32px;margin-bottom:24px;}
+.footer-brand{flex:2;}
+.footer-col{flex:1;}
+.footer-title{font-size:11px;font-weight:700;color:var(--mint);margin-bottom:12px;letter-spacing:.8px;text-transform:uppercase;}
+.footer-link{font-size:11px;color:rgba(255,255,255,.4);margin-bottom:7px;cursor:pointer;display:block;}
+.footer-link:hover{color:var(--mint);}
+.footer-copy{border-top:1px solid rgba(255,255,255,.06);padding-top:16px;text-align:center;font-size:10px;color:rgba(255,255,255,.25);max-width:1100px;margin:0 auto;}
+.social-pills{display:flex;gap:8px;margin-top:14px;}
+.social-pill{padding:5px 12px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:6px;font-size:10px;color:rgba(255,255,255,.5);cursor:pointer;}
+.social-pill:hover{background:rgba(2,195,154,.2);color:var(--mint);}
+/* ── FILTER PILLS ── */
+.filter-bar{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;}
+.filter-pill{padding:6px 16px;border:1.5px solid var(--border);border-radius:20px;font-size:11px;color:var(--mid);cursor:pointer;background:#fff;transition:all .15s;}
+.filter-pill.active,.filter-pill:hover{background:var(--teal);border-color:var(--teal);color:#fff;}
+/* ── SIDEBAR ── */
+.two-col{display:grid;grid-template-columns:2fr 1fr;gap:28px;}
+.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.two-col-equal{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+</style>
+</head>
+<body>
+
+<!-- ── NAVIGATION ── -->
+<nav class="site-nav">
+  <div class="sn-logo" onclick="showPage('home',this)">
+    <div class="sn-icon">💻</div>
+    <div>
+      <div class="sn-name">Nemitech Solutions</div>
+      <div class="sn-sub">DIGITAL SYSTEMS & ICT CONSULTANCY</div>
+    </div>
+  </div>
+  <div class="sn-links">
+    <div class="sn-link active" data-page="home" onclick="showPage('home',this)">Home</div>
+    <div class="sn-link" data-page="about" onclick="showPage('about',this)">About Us</div>
+    <!-- Services dropdown -->
+    <div class="sn-dropdown">
+      <div class="sn-link sn-dropdown-trigger" data-page="services" onclick="toggleDropdown(event)">Services</div>
+      <div class="sn-dropdown-menu">
+        <div class="sn-dropdown-item" onclick="showPage('svc-web')">
+          <div class="di-icon" style="background:var(--mintLt)">🌐</div>
+          <div><div class="di-label">Web Development</div><div class="di-sub">Responsive websites & portals</div></div>
+        </div>
+        <div class="sn-dropdown-item" onclick="showPage('svc-portal')">
+          <div class="di-icon" style="background:var(--amberLt)">⚙️</div>
+          <div><div class="di-label">Member Portals & Software</div><div class="di-sub">M-Pesa, dashboards, systems</div></div>
+        </div>
+        <div class="sn-dropdown-item" onclick="showPage('svc-mobile')">
+          <div class="di-icon" style="background:#EFF4FF">📱</div>
+          <div><div class="di-label">Mobile App Development</div><div class="di-sub">Android & iOS applications</div></div>
+        </div>
+        <div class="sn-dropdown-item" onclick="showPage('svc-agri')">
+          <div class="di-icon" style="background:var(--greenLt)">🌾</div>
+          <div><div class="di-label">Digital Agriculture Platforms</div><div class="di-sub">AgriTech for Kenya</div></div>
+        </div>
+        <div class="sn-dropdown-item" onclick="showPage('svc-cloud')">
+          <div class="di-icon" style="background:var(--mintLt)">☁️</div>
+          <div><div class="di-label">Cloud Hosting & Infrastructure</div><div class="di-sub">AWS, SSL, CDN, backups</div></div>
+        </div>
+        <div class="sn-dropdown-item" onclick="showPage('svc-ict')">
+          <div class="di-icon" style="background:var(--amberLt)">📊</div>
+          <div><div class="di-label">ICT Consultancy & Data Systems</div><div class="di-sub">Strategy, governance & M&E</div></div>
+        </div>
+        <div class="sn-dropdown-item" onclick="showPage('svc-cctv')">
+          <div class="di-icon" style="background:#F3E8FF">📷</div>
+          <div><div class="di-label">CCTV, Networking & Supplies</div><div class="di-sub">Security systems & ICT equipment</div></div>
+        </div>
+        <div class="sn-dropdown-item" style="background:var(--bg)" onclick="showPage('services')">
+          <div class="di-icon" style="background:var(--border)">📋</div>
+          <div><div class="di-label" style="color:var(--teal)">View All Services</div><div class="di-sub">Overview of everything we do</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="sn-link" data-page="portfolio" onclick="showPage('portfolio',this)">Portfolio</div>
+    <div class="sn-link" data-page="team" onclick="showPage('team',this)">Our Team</div>
+    <div class="sn-link" data-page="contact" onclick="showPage('contact',this)">Contact Us</div>
+  </div>
+  <div class="sn-btns">
+    <button class="sn-btn" style="background:transparent;border:1px solid rgba(255,255,255,.3);color:#fff;" onclick="openModal('modal-quote')">Get a Quote</button>
+    <button class="sn-btn" style="background:var(--teal);color:#fff;border:none;" onclick="openModal('modal-project')">Start a Project →</button>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════
+     HOME PAGE
+══════════════════════════════════════ -->
+<div id="pg-home" class="page active">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-inner">
+      <div style="flex:1">
+        <div class="hero-badge">🇰🇪 Proudly Kenyan · Est. 2022</div>
+        <div class="hero-title">Building Institutions<br>for a <span>Digital Kenya</span></div>
+        <div class="hero-sub">Nemitech Solutions is a Nairobi-based ICT and digital systems consultancy specialising in web development, mobile applications, custom software, and digital agriculture platforms for government, associations, and private sector institutions.</div>
+        <div class="hero-btns">
+          <button class="btn btn-teal" onclick="showPage('services')">Explore Our Services →</button>
+          <button class="btn" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;" onclick="showPage('portfolio')">View Portfolio</button>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="hero-stats">
+          <div class="stat-box"><div class="stat-val" style="color:var(--mint)">10+</div><div class="stat-lbl">Live Projects Delivered</div></div>
+          <div class="stat-box"><div class="stat-val" style="color:var(--amber)">5+</div><div class="stat-lbl">Government Clients</div></div>
+          <div class="stat-box"><div class="stat-val" style="color:var(--mint)">47</div><div class="stat-lbl">Counties Reached</div></div>
+          <div class="stat-box"><div class="stat-val" style="color:var(--amber)">100%</div><div class="stat-lbl">Client Satisfaction</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURES BAR -->
+  <div class="feat-bar">
+    <div class="feat-inner">
+      <div class="feat-item"><div class="feat-icon">🌐</div><div><div class="feat-t">Web Development</div><div class="feat-d">Responsive, modern websites & portals</div></div></div>
+      <div class="feat-item"><div class="feat-icon">📱</div><div><div class="feat-t">Mobile Apps</div><div class="feat-d">Android & iOS applications</div></div></div>
+      <div class="feat-item"><div class="feat-icon">🌾</div><div><div class="feat-t">Digital Agriculture</div><div class="feat-d">AgriTech platforms for Kenya</div></div></div>
+      <div class="feat-item"><div class="feat-icon">🏛️</div><div><div class="feat-t">Institutional Systems</div><div class="feat-d">Portals, CCTV & networking</div></div></div>
+    </div>
+  </div>
+
+  <!-- SERVICES OVERVIEW -->
+  <div class="body-wrap">
+    <div style="text-align:center;margin-bottom:40px">
+      <div class="section-label">What We Do</div>
+      <div class="section-title" style="margin:0 auto">Our Core Services</div>
+      <div class="section-sub" style="margin:10px auto 0">From institutional web platforms to mobile apps and agricultural digital systems — we deliver technology that works in Kenya.</div>
+    </div>
+    <div class="services-grid">
+      <div class="service-card" onclick="showPage('services')">
+        <div class="svc-icon" style="background:var(--mintLt)">🌐</div>
+        <div class="svc-title">Web Design & Development</div>
+        <div class="svc-desc">Modern, mobile-responsive websites and web portals built for government agencies, associations, and businesses. SEO-optimised and performance-tuned.</div>
+        <div class="svc-tags"><span class="svc-tag">WordPress</span><span class="svc-tag">Custom CMS</span><span class="svc-tag">Responsive</span></div>
+      </div>
+      <div class="service-card" onclick="showPage('services')">
+        <div class="svc-icon" style="background:#EFF4FF">📱</div>
+        <div class="svc-title">Mobile App Development</div>
+        <div class="svc-desc">Native and cross-platform Android & iOS applications with M-Pesa integration, push notifications, and offline capabilities for Kenyan users.</div>
+        <div class="svc-tags"><span class="svc-tag">Android</span><span class="svc-tag">iOS</span><span class="svc-tag">M-Pesa</span></div>
+      </div>
+      <div class="service-card" onclick="showPage('services')">
+        <div class="svc-icon" style="background:var(--amberLt)">⚙️</div>
+        <div class="svc-title">Custom Software Development</div>
+        <div class="svc-desc">Bespoke management systems, member portals, payment modules, and administrative dashboards tailored to your institutional workflows.</div>
+        <div class="svc-tags"><span class="svc-tag">MIS</span><span class="svc-tag">Member Portal</span><span class="svc-tag">Dashboard</span></div>
+      </div>
+      <div class="service-card" onclick="showPage('services')">
+        <div class="svc-icon" style="background:var(--greenLt)">🌾</div>
+        <div class="svc-title">Digital Agriculture Platforms</div>
+        <div class="svc-desc">AgriTech solutions including livestock management systems, crop monitoring dashboards, and farmer advisory platforms aligned to Kenya's digital agriculture agenda.</div>
+        <div class="svc-tags"><span class="svc-tag">AgriTech</span><span class="svc-tag">AgriTech</span><span class="svc-tag">Kenya</span></div>
+      </div>
+      <div class="service-card" onclick="showPage('services')">
+        <div class="svc-icon" style="background:var(--mintLt)">☁️</div>
+        <div class="svc-title">Cloud Hosting & Infrastructure</div>
+        <div class="svc-desc">Managed cloud hosting on AWS, Bluehost, and HostGator with SSL, CDN, database management, automated backups, and 99.9% uptime monitoring.</div>
+        <div class="svc-tags"><span class="svc-tag">AWS</span><span class="svc-tag">SSL</span><span class="svc-tag">CDN</span></div>
+      </div>
+      <div class="service-card" onclick="showPage('services')">
+        <div class="svc-icon" style="background:#EFF4FF">📊</div>
+        <div class="svc-title">ICT Consultancy & Data Systems</div>
+        <div class="svc-desc">Strategic ICT advisory, data governance frameworks, digital transformation roadmaps, and M&E dashboards for government and development institutions.</div>
+        <div class="svc-tags"><span class="svc-tag">Data Governance</span><span class="svc-tag">M&E</span><span class="svc-tag">Digital Strategy</span></div>
+      </div>
+    </div>
+
+    <!-- PORTFOLIO PREVIEW -->
+    <div style="text-align:center;margin:56px 0 28px">
+      <div class="section-label">Our Work</div>
+      <div class="section-title" style="margin:0 auto">Recent Projects</div>
+      <div class="section-sub" style="margin:10px auto 0">Live platforms serving government agencies, agricultural institutions, and private sector clients across Kenya.</div>
+    </div>
+    <div class="portfolio-grid">
+      <div class="port-card" data-cat="Agriculture" onclick="showPage('portfolio')">
+        <div class="port-thumb" style="background:linear-gradient(135deg,#1A4A2A,#2E7D32)">🌾</div>
+        <div class="port-body">
+          <div class="port-title">Kilimo Digital Platform</div>
+          <div class="port-client">Agricultural Institution — Nairobi · Live platform</div>
+          <div class="port-tags"><span class="badge" style="background:var(--mintLt);color:var(--teal)">Government</span><span class="badge" style="background:var(--amberLt);color:var(--amber)">AgriTech</span></div>
+        </div>
+      </div>
+      <div class="port-card" data-cat="Agriculture" onclick="showPage('portfolio')">
+        <div class="port-thumb" style="background:linear-gradient(135deg,#1A2B4A,#028090)">🤖</div>
+        <div class="port-body">
+          <div class="port-title">Digital Agriculture Intelligence Platform</div>
+          <div class="port-client">agricultural institutions Agricultural Information Resource Centre · airc.Live platform</div>
+          <div class="port-tags"><span class="badge" style="background:var(--mintLt);color:var(--teal)">Government</span><span class="badge" style="background:#EFF4FF;color:#2563EB">AI/Data</span></div>
+        </div>
+      </div>
+      <div class="port-card" data-cat="Association" onclick="showPage('portfolio')">
+        <div class="port-thumb" style="background:linear-gradient(135deg,#4A1A2B,#8B1A3A)">🏥</div>
+        <div class="port-body">
+          <div class="port-title">KAHA Digital Platform</div>
+          <div class="port-client">Kenya Association of Health Administrators</div>
+          <div class="port-tags"><span class="badge" style="background:var(--mintLt);color:var(--teal)">Association</span><span class="badge" style="background:var(--greenLt);color:var(--green)">M-Pesa</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:8px">
+      <button class="btn btn-outline" onclick="showPage('portfolio')">View All Projects →</button>
+    </div>
+
+    <!-- WHY NEMITECH -->
+    <div style="margin:56px 0">
+      <div style="text-align:center;margin-bottom:32px">
+        <div class="section-label">Why Choose Us</div>
+        <div class="section-title" style="margin:0 auto">The Nemitech Advantage</div>
+      </div>
+      <div class="three-col">
+        <div class="card" style="border-top:4px solid var(--teal)">
+          <div style="font-size:28px;margin-bottom:12px">🇰🇪</div>
+          <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px">Deep Kenyan Context</div>
+          <div style="font-size:11px;color:var(--mid);line-height:1.7">We understand Kenya's digital landscape — M-Pesa, Huduma, eCitizen, county devolution, Kenyan mobile networks. Our solutions are built for Kenyan institutions, not adapted from foreign templates.</div>
+        </div>
+        <div class="card" style="border-top:4px solid var(--amber)">
+          <div style="font-size:28px;margin-bottom:12px">🏛️</div>
+          <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px">Government & Institutional Experience</div>
+          <div style="font-size:11px;color:var(--mid);line-height:1.7">Proven experience delivering platforms for government agencies, professional associations, county health networks, and NGOs. We understand public sector workflows, procurement, and the unique demands of institutional digital transformation.</div>
+        </div>
+        <div class="card" style="border-top:4px solid var(--mint)">
+          <div style="font-size:28px;margin-bottom:12px">🚀</div>
+          <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px">End-to-End Delivery</div>
+          <div style="font-size:11px;color:var(--mid);line-height:1.7">From concept and UI/UX design through development, cloud hosting, staff training, and 6 months free post-launch support — we stay with you beyond go-live.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA BANNER -->
+    <div class="cta-banner">
+      <div class="cta-text">
+        <div class="cta-title">Ready to Build Your Digital Platform?</div>
+        <div class="cta-sub">Whether you are a government agency, professional association, county government, or private enterprise — Nemitech Solutions will deliver a platform that works. Let's talk.</div>
+      </div>
+      <div style="display:flex;gap:10px;flex-shrink:0">
+        <button class="btn btn-white" onclick="openModal('modal-quote')">Get a Free Quote →</button>
+        <button class="btn" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);color:#fff;" onclick="showPage('portfolio')">See Our Work</button>
+      </div>
+    </div>
+
+    <!-- TESTIMONIALS -->
+    <div style="margin:40px 0">
+      <div style="text-align:center;margin-bottom:28px">
+        <div class="section-label">Client Feedback</div>
+        <div class="section-title" style="margin:0 auto">What Our Clients Say</div>
+      </div>
+      <div class="three-col">
+        <div class="card" style="border-left:4px solid var(--teal)">
+          <div style="font-size:28px;margin-bottom:10px;color:var(--teal)">"</div>
+          <div style="font-size:12px;color:var(--mid);line-height:1.7;margin-bottom:14px">Nemitech delivered our digital platform on time and within budget. The team's deep understanding of government processes made the entire experience smooth. The system has transformed how we manage data across all 47 counties.</div>
+          <div style="font-size:11px;font-weight:700;color:var(--navy)">ICT Director</div>
+          <div style="font-size:10px;color:var(--lt)">Government Agricultural Institution, Nairobi</div>
+        </div>
+        <div class="card" style="border-left:4px solid var(--amber)">
+          <div style="font-size:28px;margin-bottom:10px;color:var(--amber)">"</div>
+          <div style="font-size:12px;color:var(--mid);line-height:1.7;margin-bottom:14px">The interactive prototype they developed for our committee meeting was exceptional — it communicated the vision of our platform so clearly that the board approved the project on the same day. Highly professional team.</div>
+          <div style="font-size:11px;font-weight:700;color:var(--navy)">Chairperson</div>
+          <div style="font-size:10px;color:var(--lt)">Kenya Association of Health Administrators</div>
+        </div>
+        <div class="card" style="border-left:4px solid var(--mint)">
+          <div style="font-size:28px;margin-bottom:10px;color:var(--mint)">"</div>
+          <div style="font-size:12px;color:var(--mid);line-height:1.7;margin-bottom:14px">From design to deployment, Nemitech was exceptional. Their understanding of M-Pesa integration and Kenyan digital infrastructure made our member payment system work flawlessly from day one.</div>
+          <div style="font-size:11px;font-weight:700;color:var(--navy)">Executive Director</div>
+          <div style="font-size:10px;color:var(--lt)">Professional Association — Nairobi</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:32px;height:32px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">💻</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#fff">Nemitech Solutions</div>
+            <div style="font-size:8px;color:var(--mint);letter-spacing:.8px">DIGITAL SYSTEMS & ICT CONSULTANCY</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);line-height:1.8;max-width:280px">Building institutions for a digital Kenya. Delivering ICT and digital systems solutions to government, associations, and the private sector since 2022.</div>
+        <div class="social-pills">
+          <div class="social-pill">LinkedIn</div>
+          <div class="social-pill">Twitter/X</div>
+          <div class="social-pill">Facebook</div>
+        </div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Services</div>
+        <div class="footer-link" onclick="showPage('services')">Web Development</div>
+        <div class="footer-link" onclick="showPage('services')">Mobile Apps</div>
+        <div class="footer-link" onclick="showPage('services')">Custom Software</div>
+        <div class="footer-link" onclick="showPage('services')">Digital Agriculture</div>
+        <div class="footer-link" onclick="showPage('services')">Cloud Hosting</div>
+        <div class="footer-link" onclick="showPage('services')">ICT Consultancy</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Company</div>
+        <div class="footer-link" onclick="showPage('about')">About Us</div>
+        <div class="footer-link" onclick="showPage('portfolio')">Portfolio</div>
+        <div class="footer-link" onclick="showPage('team')">Our Team</div>
+        <div class="footer-link" onclick="showPage('contact')">Contact Us</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Contact</div>
+        <div class="footer-link">📧 nemaeri@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📧 info@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📞 +254 710 652544</div>
+        <div class="footer-link">📍 Nairobi, Kenya</div>
+        <div class="footer-link">🌐 www.nemitech.co.ke</div>
+      </div>
+    </div>
+    <div class="footer-copy">© 2025 Nemitech Solutions · Digital Systems & ICT Consultancy · Nairobi, Kenya · All rights reserved</div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════
+     ABOUT PAGE
+══════════════════════════════════════ -->
+<div id="pg-about" class="page">
+  <div class="page-hdr">
+    <div class="page-hdr-inner">
+      <div class="breadcrumb">Home / About Us</div>
+      <div class="page-hdr-title">About Nemitech Solutions</div>
+      <div class="page-hdr-sub">Our story, mission, and the team behind Kenya's institutional digital transformation</div>
+    </div>
+  </div>
+  <div class="body-wrap">
+    <!-- Mission / Vision / Values -->
+    <div class="three-col" style="margin-bottom:36px">
+      <div class="card" style="border-top:4px solid var(--teal)">
+        <div style="font-size:24px;margin-bottom:10px">🎯</div>
+        <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px">Our Mission</div>
+        <div style="font-size:11px;color:var(--mid);line-height:1.7">To empower Kenya's institutions — government agencies, professional associations, and enterprises — with bespoke digital systems that drive operational excellence, transparency, and sustainable impact.</div>
+      </div>
+      <div class="card" style="border-top:4px solid var(--navy)">
+        <div style="font-size:24px;margin-bottom:10px">🌟</div>
+        <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px">Our Vision</div>
+        <div style="font-size:11px;color:var(--mid);line-height:1.7">To be Kenya's most trusted ICT and digital systems partner for institutional transformation — building the digital infrastructure that underpins a prosperous, data-driven Kenya.</div>
+      </div>
+      <div class="card" style="border-top:4px solid var(--amber)">
+        <div style="font-size:24px;margin-bottom:10px">💎</div>
+        <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px">Our Values</div>
+        <div style="font-size:11px;color:var(--mid);line-height:1.7">Integrity · Innovation · Excellence · Client Partnership · Deep local context · Continuous learning · Accountability to impact</div>
+      </div>
+    </div>
+
+    <!-- Story -->
+    <div class="two-col" style="margin-bottom:40px">
+      <div>
+        <div class="section-label">Our Story</div>
+        <div class="section-title">From the Ministry to the Market</div>
+        <div style="font-size:12px;color:var(--mid);line-height:1.8;margin-top:12px">
+          <p style="margin-bottom:12px">Nemitech Solutions was founded with a simple conviction: Kenya's institutions deserve world-class digital systems built by people who truly understand them — their workflows, their languages, and the Kenyan digital environment they operate in.</p>
+          <p style="margin-bottom:12px">The founding team brings deep experience in digital systems delivery across government, health, agriculture, and private sector institutions. We understand M-Pesa, county devolution, Kenyan procurement processes, and what it takes to build digital tools that staff actually use.</p>
+          <p>Nemitech Solutions has delivered platforms for professional associations, veterinary institutions, agribusiness enterprises, real estate firms, and health bodies — all built with the same rigour: responsive design, M-Pesa integration, cloud infrastructure, and genuine post-launch support.</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card" style="background:var(--navy);border-color:var(--navy)">
+          <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:12px">🏆 Key Milestones</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <div style="width:36px;height:36px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">22</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.7)">Founded — first institutional digital platform launched</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <div style="width:36px;height:36px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">23</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.7)">Expanded to 10+ live platforms across associations, agriculture & private sector</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <div style="width:36px;height:36px;background:var(--mint);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy);flex-shrink:0">25</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.7)">Mobile app & CCTV/networking division launched · 5+ enterprise clients</div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="border-left:4px solid var(--mint)">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px">🎓 Academic Grounding</div>
+          <div style="font-size:11px;color:var(--mid);line-height:1.7">Our founding team has deep expertise in software engineering and AI systems — ensuring our solutions leverage the latest in machine learning, intelligent automation, and modern digital platform design.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-banner">
+      <div class="cta-text">
+        <div class="cta-title">Partner with a Team That Understands Kenya</div>
+        <div class="cta-sub">Government processes, M-Pesa flows, county devolution, agricultural digital platforms — we have built it, lived it, and we will build it for you.</div>
+      </div>
+      <button class="btn btn-white" onclick="openModal('modal-project')">Start a Conversation →</button>
+    </div>
+  </div>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:32px;height:32px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">💻</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#fff">Nemitech Solutions</div>
+            <div style="font-size:8px;color:var(--mint);letter-spacing:.8px">DIGITAL SYSTEMS & ICT CONSULTANCY</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);line-height:1.8;max-width:280px">Building institutions for a digital Kenya. Delivering ICT, digital systems, networking, and CCTV solutions to associations, enterprises, and institutions since 2022.</div>
+        <div class="social-pills">
+          <div class="social-pill">LinkedIn</div>
+          <div class="social-pill">Twitter/X</div>
+          <div class="social-pill">Facebook</div>
+        </div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Services</div>
+        <div class="footer-link" onclick="showPage('svc-web')">Web Development</div>
+        <div class="footer-link" onclick="showPage('svc-portal')">Member Portals & Software</div>
+        <div class="footer-link" onclick="showPage('svc-mobile')">Mobile App Development</div>
+        <div class="footer-link" onclick="showPage('svc-agri')">Digital Agriculture</div>
+        <div class="footer-link" onclick="showPage('svc-cloud')">Cloud Hosting</div>
+        <div class="footer-link" onclick="showPage('svc-cctv')">CCTV & Networking</div>
+        <div class="footer-link" onclick="showPage('svc-ict')">ICT Consultancy</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Company</div>
+        <div class="footer-link" onclick="showPage('about')">About Us</div>
+        <div class="footer-link" onclick="showPage('portfolio')">Portfolio</div>
+        <div class="footer-link" onclick="showPage('team')">Our Team</div>
+        <div class="footer-link" onclick="showPage('contact')">Contact Us</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Contact</div>
+        <div class="footer-link">📧 nemaeri@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📧 info@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📞 +254 710 652544</div>
+        <div class="footer-link">📍 Nairobi, Kenya</div>
+        <div class="footer-link">🌐 www.nemitech.co.ke</div>
+      </div>
+    </div>
+    <div class="footer-copy">© 2025 Nemitech Solutions · Digital Systems & ICT Consultancy · Nairobi, Kenya · All rights reserved</div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════
+     SERVICES OVERVIEW PAGE
+══════════════════════════════════════ -->
+<div id="pg-services" class="page">
+  <div class="page-hdr">
+    <div class="page-hdr-inner">
+      <div class="breadcrumb">Home / Services</div>
+      <div class="page-hdr-title">Our Services</div>
+      <div class="page-hdr-sub">End-to-end digital solutions for government, associations, and enterprises across Kenya</div>
+    </div>
+  </div>
+  <div class="body-wrap">
+    <div class="services-grid">
+      <div class="service-card" onclick="showPage('svc-web')">
+        <div class="svc-icon" style="background:var(--mintLt)">🌐</div>
+        <div class="svc-title">Web Design & Development</div>
+        <div class="svc-desc">Modern, mobile-responsive websites and web portals built for government agencies, associations, and businesses. SEO-optimised and performance-tuned.</div>
+        <div class="svc-tags"><span class="svc-tag">WordPress</span><span class="svc-tag">Custom CMS</span><span class="svc-tag">Responsive</span></div>
+        <div style="margin-top:14px;font-size:11px;color:var(--teal);font-weight:600">Learn more →</div>
+      </div>
+      <div class="service-card" onclick="showPage('svc-portal')">
+        <div class="svc-icon" style="background:var(--amberLt)">⚙️</div>
+        <div class="svc-title">Member Portals & Custom Software</div>
+        <div class="svc-desc">Full-stack member management systems, payment portals, and administrative dashboards tailored to your institutional workflows and needs.</div>
+        <div class="svc-tags"><span class="svc-tag">Member Portal</span><span class="svc-tag">M-Pesa</span><span class="svc-tag">Dashboard</span></div>
+        <div style="margin-top:14px;font-size:11px;color:var(--teal);font-weight:600">Learn more →</div>
+      </div>
+      <div class="service-card" onclick="showPage('svc-mobile')">
+        <div class="svc-icon" style="background:#EFF4FF">📱</div>
+        <div class="svc-title">Mobile App Development</div>
+        <div class="svc-desc">Native and cross-platform Android & iOS apps with M-Pesa integration, push notifications, and offline capabilities for Kenyan users.</div>
+        <div class="svc-tags"><span class="svc-tag">Android</span><span class="svc-tag">iOS</span><span class="svc-tag">M-Pesa</span></div>
+        <div style="margin-top:14px;font-size:11px;color:var(--teal);font-weight:600">Learn more →</div>
+      </div>
+      <div class="service-card" onclick="showPage('svc-agri')">
+        <div class="svc-icon" style="background:var(--greenLt)">🌾</div>
+        <div class="svc-title">Digital Agriculture Platforms</div>
+        <div class="svc-desc">AgriTech solutions aligned to Kenya's digital agriculture agenda 2025–2035 including livestock, crop, and advisory platforms.</div>
+        <div class="svc-tags"><span class="svc-tag">AgriTech</span><span class="svc-tag">AgriTech</span><span class="svc-tag">Kenya</span></div>
+        <div style="margin-top:14px;font-size:11px;color:var(--teal);font-weight:600">Learn more →</div>
+      </div>
+      <div class="service-card" onclick="showPage('svc-cctv')">
+        <div class="svc-icon" style="background:#F3E8FF">📷</div>
+        <div class="svc-title">CCTV, Networking & Supplies</div>
+        <div class="svc-desc">CCTV installation, structured network cabling, Wi-Fi setup, and ICT equipment supply for offices, institutions, and commercial premises.</div>
+        <div class="svc-tags"><span class="svc-tag">CCTV</span><span class="svc-tag">Networking</span><span class="svc-tag">Supplies</span></div>
+      </div>
+      <div class="service-card" onclick="showPage('svc-cloud')">
+        <div class="svc-icon" style="background:var(--mintLt)">☁️</div>
+        <div class="svc-title">Cloud Hosting & Infrastructure</div>
+        <div class="svc-desc">Managed cloud hosting on AWS, Bluehost, and HostGator with SSL, CDN, automated backups, and 99.9% uptime monitoring.</div>
+        <div class="svc-tags"><span class="svc-tag">AWS</span><span class="svc-tag">SSL</span><span class="svc-tag">CDN</span></div>
+        <div style="margin-top:14px;font-size:11px;color:var(--teal);font-weight:600">Learn more →</div>
+      </div>
+      <div class="service-card" onclick="showPage('svc-cctv')">
+        <div class="svc-icon" style="background:#F3E8FF">📷</div>
+        <div class="svc-title">CCTV, Networking & Supplies</div>
+        <div class="svc-desc">CCTV installation and monitoring systems, structured network cabling, Wi-Fi setup, and ICT equipment supply for offices, institutions, and commercial premises.</div>
+        <div class="svc-tags"><span class="svc-tag">CCTV</span><span class="svc-tag">Networking</span><span class="svc-tag">Supplies</span></div>
+        <div style="margin-top:14px;font-size:11px;color:var(--teal);font-weight:600">Learn more →</div>
+      </div>
+      <div class="service-card" onclick="showPage('svc-ict')">
+        <div class="svc-icon" style="background:var(--amberLt)">📊</div>
+        <div class="svc-title">ICT Consultancy & Data Systems</div>
+        <div class="svc-desc">Strategic ICT advisory, data governance frameworks, digital transformation roadmaps, and M&E dashboards for institutions.</div>
+        <div class="svc-tags"><span class="svc-tag">Data Governance</span><span class="svc-tag">M&E</span><span class="svc-tag">Strategy</span></div>
+        <div style="margin-top:14px;font-size:11px;color:var(--teal);font-weight:600">Learn more →</div>
+      </div>
+    </div>
+    <div class="cta-banner" style="margin-top:48px">
+      <div class="cta-text">
+        <div class="cta-title">Not sure which service you need?</div>
+        <div class="cta-sub">Tell us your challenge and we will recommend the right solution. All projects start with a free discovery call.</div>
+      </div>
+      <button class="btn btn-white" onclick="openModal('modal-project')">Get a Free Consultation →</button>
+    </div>
+  </div>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:32px;height:32px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">💻</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#fff">Nemitech Solutions</div>
+            <div style="font-size:8px;color:var(--mint);letter-spacing:.8px">DIGITAL SYSTEMS & ICT CONSULTANCY</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);line-height:1.8;max-width:280px">Building institutions for a digital Kenya. Delivering ICT, digital systems, networking, and CCTV solutions to associations, enterprises, and institutions since 2022.</div>
+        <div class="social-pills">
+          <div class="social-pill">LinkedIn</div>
+          <div class="social-pill">Twitter/X</div>
+          <div class="social-pill">Facebook</div>
+        </div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Services</div>
+        <div class="footer-link" onclick="showPage('svc-web')">Web Development</div>
+        <div class="footer-link" onclick="showPage('svc-portal')">Member Portals & Software</div>
+        <div class="footer-link" onclick="showPage('svc-mobile')">Mobile App Development</div>
+        <div class="footer-link" onclick="showPage('svc-agri')">Digital Agriculture</div>
+        <div class="footer-link" onclick="showPage('svc-cloud')">Cloud Hosting</div>
+        <div class="footer-link" onclick="showPage('svc-cctv')">CCTV & Networking</div>
+        <div class="footer-link" onclick="showPage('svc-ict')">ICT Consultancy</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Company</div>
+        <div class="footer-link" onclick="showPage('about')">About Us</div>
+        <div class="footer-link" onclick="showPage('portfolio')">Portfolio</div>
+        <div class="footer-link" onclick="showPage('team')">Our Team</div>
+        <div class="footer-link" onclick="showPage('contact')">Contact Us</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Contact</div>
+        <div class="footer-link">📧 nemaeri@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📧 info@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📞 +254 710 652544</div>
+        <div class="footer-link">📍 Nairobi, Kenya</div>
+        <div class="footer-link">🌐 www.nemitech.co.ke</div>
+      </div>
+    </div>
+    <div class="footer-copy">© 2025 Nemitech Solutions · Digital Systems & ICT Consultancy · Nairobi, Kenya · All rights reserved</div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════
+     SERVICE 1: WEB DEVELOPMENT
+══════════════════════════════════════ -->
+<div id="pg-svc-web" class="page">
+  <div class="page-hdr" style="background:linear-gradient(135deg,#1A2B4A 0%,#028090 100%)">
+    <div class="page-hdr-inner">
+      <div class="breadcrumb">Home / Services / Web Development</div>
+      <div style="font-size:40px;margin-bottom:10px">🌐</div>
+      <div class="page-hdr-title">Web Design & Development</div>
+      <div class="page-hdr-sub">Modern, responsive, and purpose-built websites for institutions, associations, and enterprises across Kenya</div>
+    </div>
+  </div>
+  <div class="body-wrap">
+    <div class="two-col">
+      <div>
+        <div class="section-label">What We Deliver</div>
+        <div class="section-title">Websites That Work for Kenya</div>
+        <div style="font-size:12px;color:var(--mid);line-height:1.8;margin-top:12px;margin-bottom:20px">We design and build modern, mobile-first websites that serve as the authoritative digital face of your institution. With over 80% of Kenyan internet users on mobile, every site we build is tested across devices, network speeds, and Kenyan browser environments.</div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="card" style="border-left:4px solid var(--teal);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">📐 UI/UX Design & Branding</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Custom wireframes, brand-aligned colour systems, typography, and user experience design. We design for your target audience — from rural extension officers to urban health administrators.</div>
+          </div>
+          <div class="card" style="border-left:4px solid var(--teal);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">🔧 WordPress CMS Development</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Staff can manage news, events, publications, and pages without any technical knowledge. We configure custom post types, categories, and admin roles suited to your team structure.</div>
+          </div>
+          <div class="card" style="border-left:4px solid var(--teal);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">📅 Dynamic Events & News System</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Live events calendar, filterable news feed, downloadable publications library, and photo gallery. All manageable by your secretariat without developer involvement.</div>
+          </div>
+          <div class="card" style="border-left:4px solid var(--teal);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">🔍 SEO, Analytics & Performance</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">On-page SEO optimisation, Google Analytics integration, sitemap submission, and page speed optimisation. We ensure your institution is discoverable on Google Kenya.</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card" style="background:linear-gradient(135deg,var(--navy),var(--teal));border:none;text-align:center;padding:28px">
+          <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">Starting from</div>
+          <div style="font-size:36px;font-weight:800;color:var(--mint)">KES 80,000</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:5px;margin-bottom:20px">5-page corporate website · CMS · SSL · Mobile responsive</div>
+          <button class="btn btn-white" style="width:100%" onclick="openModal('modal-quote')">Request a Quote →</button>
+        </div>
+        <div class="card">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:12px">⏱ Typical Timeline</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:var(--mid)">Discovery & Design</span><span style="font-weight:600;color:var(--teal)">Weeks 1–2</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:var(--mid)">Development & CMS Setup</span><span style="font-weight:600;color:var(--teal)">Weeks 3–6</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:var(--mid)">Content & Testing</span><span style="font-weight:600;color:var(--teal)">Week 7</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:var(--mid)">Launch & Training</span><span style="font-weight:600;color:var(--teal)">Week 8</span></div>
+          </div>
+        </div>
+        <div class="card" style="background:var(--mintLt);border-color:var(--teal)">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px">✅ Included in Every Website</div>
+          <div style="display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--mid)">
+            <div>✓ SSL certificate (HTTPS)</div>
+            <div>✓ Mobile responsive design</div>
+            <div>✓ Google Analytics setup</div>
+            <div>✓ Contact form with email</div>
+            <div>✓ Staff training (2 sessions)</div>
+            <div>✓ 6 months free support</div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px">🏛️ Recent Web Projects</div>
+          <div style="font-size:11px;color:var(--teal);margin-bottom:4px;cursor:pointer">↗ Live platform — Agricultural Institution</div>
+          <div style="font-size:11px;color:var(--teal);margin-bottom:4px;cursor:pointer">↗ kaha.or.ke — Health Administrators</div>
+          <div style="font-size:11px;color:var(--teal);cursor:pointer">↗ tehilarealtors.co.ke — Real Estate</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:32px;height:32px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">💻</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#fff">Nemitech Solutions</div>
+            <div style="font-size:8px;color:var(--mint);letter-spacing:.8px">DIGITAL SYSTEMS & ICT CONSULTANCY</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);line-height:1.8;max-width:280px">Building institutions for a digital Kenya. Delivering ICT, digital systems, networking, and CCTV solutions to associations, enterprises, and institutions since 2022.</div>
+        <div class="social-pills">
+          <div class="social-pill">LinkedIn</div>
+          <div class="social-pill">Twitter/X</div>
+          <div class="social-pill">Facebook</div>
+        </div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Services</div>
+        <div class="footer-link" onclick="showPage('svc-web')">Web Development</div>
+        <div class="footer-link" onclick="showPage('svc-portal')">Member Portals & Software</div>
+        <div class="footer-link" onclick="showPage('svc-mobile')">Mobile App Development</div>
+        <div class="footer-link" onclick="showPage('svc-agri')">Digital Agriculture</div>
+        <div class="footer-link" onclick="showPage('svc-cloud')">Cloud Hosting</div>
+        <div class="footer-link" onclick="showPage('svc-cctv')">CCTV & Networking</div>
+        <div class="footer-link" onclick="showPage('svc-ict')">ICT Consultancy</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Company</div>
+        <div class="footer-link" onclick="showPage('about')">About Us</div>
+        <div class="footer-link" onclick="showPage('portfolio')">Portfolio</div>
+        <div class="footer-link" onclick="showPage('team')">Our Team</div>
+        <div class="footer-link" onclick="showPage('contact')">Contact Us</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Contact</div>
+        <div class="footer-link">📧 nemaeri@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📧 info@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📞 +254 710 652544</div>
+        <div class="footer-link">📍 Nairobi, Kenya</div>
+        <div class="footer-link">🌐 www.nemitech.co.ke</div>
+      </div>
+    </div>
+    <div class="footer-copy">© 2025 Nemitech Solutions · Digital Systems & ICT Consultancy · Nairobi, Kenya · All rights reserved</div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════
+     SERVICE 2: MEMBER PORTAL & SOFTWARE
+══════════════════════════════════════ -->
+<div id="pg-svc-portal" class="page">
+  <div class="page-hdr" style="background:linear-gradient(135deg,#1A3A4A 0%,#028090 100%)">
+    <div class="page-hdr-inner">
+      <div class="breadcrumb">Home / Services / Member Portals & Custom Software</div>
+      <div style="font-size:40px;margin-bottom:10px">⚙️</div>
+      <div class="page-hdr-title">Member Portals & Custom Software</div>
+      <div class="page-hdr-sub">Full-stack member management systems with M-Pesa payments, digital certificates, and admin dashboards</div>
+    </div>
+  </div>
+  <div class="body-wrap">
+    <div class="two-col">
+      <div>
+        <div class="section-label">What We Build</div>
+        <div class="section-title">Complete Member Management Systems</div>
+        <div style="font-size:12px;color:var(--mid);line-height:1.8;margin-top:12px;margin-bottom:20px">Professional associations, SACCOs, county health networks, and NGOs need more than a static website — they need a living platform where members register, pay, receive certificates, and stay connected. We build the full stack: public portal, member backend, payment engine, and admin dashboard.</div>
+        <div class="three-col" style="margin-bottom:20px">
+          <div class="card" style="padding:14px;text-align:center">
+            <div style="font-size:28px;margin-bottom:8px">📝</div>
+            <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:5px">Online Registration</div>
+            <div style="font-size:10px;color:var(--mid);line-height:1.6">Multi-step application forms with document upload, category selection, and auto-reference numbers</div>
+          </div>
+          <div class="card" style="padding:14px;text-align:center">
+            <div style="font-size:28px;margin-bottom:8px">💳</div>
+            <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:5px">M-Pesa & Card</div>
+            <div style="font-size:10px;color:var(--mid);line-height:1.6">Safaricom Daraja API STK Push, Pesapal/Flutterwave for Visa & Mastercard, instant PDF receipts</div>
+          </div>
+          <div class="card" style="padding:14px;text-align:center">
+            <div style="font-size:28px;margin-bottom:8px">📜</div>
+            <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:5px">Digital Certificate</div>
+            <div style="font-size:10px;color:var(--mid);line-height:1.6">Auto-generated membership certificates downloadable as PDF and shareable via verified link</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div class="card" style="border-left:4px solid var(--amber);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">📊 Admin Dashboard</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Real-time KPIs: total members, revenue YTD, pending approvals, renewals due. Revenue bar charts, member breakdown by category, approve/reject applications in one click.</div>
+          </div>
+          <div class="card" style="border-left:4px solid var(--amber);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">📢 Bulk Communications</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Send targeted bulk email and SMS to member groups — all members, lapsing members, event attendees. Integrated with SendGrid for email delivery and Africa's Talking for SMS.</div>
+          </div>
+          <div class="card" style="border-left:4px solid var(--amber);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">📋 CPD & Renewal Tracking</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Track CPD hours, auto-send renewal reminders at 90/60/30 days, flag lapsed members, and export compliance reports for governing boards.</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card" style="background:linear-gradient(135deg,#1A3A4A,var(--teal));border:none;text-align:center;padding:28px">
+          <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">Starting from</div>
+          <div style="font-size:36px;font-weight:800;color:var(--mint)">KES 350,000</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:5px;margin-bottom:20px">Portal + Payments + Dashboard + Training + 6-month support</div>
+          <button class="btn btn-white" style="width:100%" onclick="openModal('modal-quote')">Request a Quote →</button>
+        </div>
+        <div class="card">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:12px">📦 What's Included</div>
+          <div style="display:flex;flex-direction:column;gap:7px;font-size:11px;color:var(--mid)">
+            <div>✓ Public-facing membership information pages</div>
+            <div>✓ 4-step online registration wizard</div>
+            <div>✓ M-Pesa STK Push payment integration</div>
+            <div>✓ Pesapal/Flutterwave card payment</div>
+            <div>✓ Auto PDF receipts & digital certificates</div>
+            <div>✓ Member directory & profile management</div>
+            <div>✓ Admin dashboard with 7 modules</div>
+            <div>✓ Role-based access (Admin/Viewer/Super Admin)</div>
+            <div>✓ Bulk email & SMS broadcast</div>
+            <div>✓ Staff training (6 sessions)</div>
+            <div>✓ 6 months post-launch support</div>
+          </div>
+        </div>
+        <div class="card" style="border-left:4px solid var(--mint)">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px">🏛️ Case Study: KAHA Platform</div>
+          <div style="font-size:11px;color:var(--mid);line-height:1.7">Full platform developed for the Kenya Association of Health Administrators — 4 modules, M-Pesa integration, digital certificates, and Phase 2 mobile app. KES 680,000 · 12 weeks.</div>
+          <div style="font-size:11px;color:var(--teal);margin-top:8px;cursor:pointer" onclick="showPage('portfolio')">View in Portfolio →</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:32px;height:32px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">💻</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#fff">Nemitech Solutions</div>
+            <div style="font-size:8px;color:var(--mint);letter-spacing:.8px">DIGITAL SYSTEMS & ICT CONSULTANCY</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);line-height:1.8;max-width:280px">Building institutions for a digital Kenya. Delivering ICT, digital systems, networking, and CCTV solutions to associations, enterprises, and institutions since 2022.</div>
+        <div class="social-pills">
+          <div class="social-pill">LinkedIn</div>
+          <div class="social-pill">Twitter/X</div>
+          <div class="social-pill">Facebook</div>
+        </div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Services</div>
+        <div class="footer-link" onclick="showPage('svc-web')">Web Development</div>
+        <div class="footer-link" onclick="showPage('svc-portal')">Member Portals & Software</div>
+        <div class="footer-link" onclick="showPage('svc-mobile')">Mobile App Development</div>
+        <div class="footer-link" onclick="showPage('svc-agri')">Digital Agriculture</div>
+        <div class="footer-link" onclick="showPage('svc-cloud')">Cloud Hosting</div>
+        <div class="footer-link" onclick="showPage('svc-cctv')">CCTV & Networking</div>
+        <div class="footer-link" onclick="showPage('svc-ict')">ICT Consultancy</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Company</div>
+        <div class="footer-link" onclick="showPage('about')">About Us</div>
+        <div class="footer-link" onclick="showPage('portfolio')">Portfolio</div>
+        <div class="footer-link" onclick="showPage('team')">Our Team</div>
+        <div class="footer-link" onclick="showPage('contact')">Contact Us</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Contact</div>
+        <div class="footer-link">📧 nemaeri@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📧 info@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📞 +254 710 652544</div>
+        <div class="footer-link">📍 Nairobi, Kenya</div>
+        <div class="footer-link">🌐 www.nemitech.co.ke</div>
+      </div>
+    </div>
+    <div class="footer-copy">© 2025 Nemitech Solutions · Digital Systems & ICT Consultancy · Nairobi, Kenya · All rights reserved</div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════
+     SERVICE 3: MOBILE APP
+══════════════════════════════════════ -->
+<div id="pg-svc-mobile" class="page">
+  <div class="page-hdr" style="background:linear-gradient(135deg,#0F1E30 0%,#1A2B4A 100%)">
+    <div class="page-hdr-inner">
+      <div class="breadcrumb">Home / Services / Mobile App Development</div>
+      <div style="font-size:40px;margin-bottom:10px">📱</div>
+      <div class="page-hdr-title">Mobile App Development</div>
+      <div class="page-hdr-sub">Android & iOS applications built for Kenyan users — M-Pesa integrated, push-enabled, and published to both stores</div>
+    </div>
+  </div>
+  <div class="body-wrap">
+    <div class="two-col">
+      <div>
+        <div class="section-label">What We Build</div>
+        <div class="section-title">Apps Designed for Kenya's Mobile-First Reality</div>
+        <div style="font-size:12px;color:var(--mid);line-height:1.8;margin-top:12px;margin-bottom:20px">Kenya has over 65 million mobile subscriptions and one of Africa's highest mobile internet penetration rates. Your members, farmers, customers, and staff are on their phones. We build apps that work for them — fast, lightweight, M-Pesa-ready, and designed for Kenyan network conditions.</div>
+        <div class="services-grid" style="grid-template-columns:1fr 1fr;margin-bottom:20px">
+          <div class="card" style="padding:16px">
+            <div style="font-size:22px;margin-bottom:8px">📱</div>
+            <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:5px">Android (Native/Flutter)</div>
+            <div style="font-size:10px;color:var(--mid);line-height:1.6">Kotlin or Flutter cross-platform development. Optimised for low-end Android devices common in Kenya.</div>
+          </div>
+          <div class="card" style="padding:16px">
+            <div style="font-size:22px;margin-bottom:8px">🍎</div>
+            <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:5px">iOS (Swift/Flutter)</div>
+            <div style="font-size:10px;color:var(--mid);line-height:1.6">Swift or Flutter iOS development. TestFlight beta testing, App Store review navigation, and publishing.</div>
+          </div>
+          <div class="card" style="padding:16px">
+            <div style="font-size:22px;margin-bottom:8px">📲</div>
+            <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:5px">M-Pesa Daraja API</div>
+            <div style="font-size:10px;color:var(--mid);line-height:1.6">STK Push, C2B/B2C, transaction status callbacks. Real-time payment confirmation within the app.</div>
+          </div>
+          <div class="card" style="padding:16px">
+            <div style="font-size:22px;margin-bottom:8px">🔔</div>
+            <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:5px">Push Notifications</div>
+            <div style="font-size:10px;color:var(--mid);line-height:1.6">Firebase Cloud Messaging for real-time alerts — renewal reminders, event announcements, news updates.</div>
+          </div>
+        </div>
+        <div class="card" style="border-left:4px solid var(--mint);margin-bottom:12px;padding:14px 16px">
+          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">🏪 Store Publishing & App Management</div>
+          <div style="font-size:11px;color:var(--mid);line-height:1.7">We handle the full Google Play and Apple App Store submission process — screenshots, metadata, content ratings, and App Store Review compliance. We also manage version updates and compatibility patches for new OS releases.</div>
+        </div>
+        <div class="card" style="border-left:4px solid var(--mint);padding:14px 16px">
+          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">🔐 Security & Biometrics</div>
+          <div style="font-size:11px;color:var(--mid);line-height:1.7">Biometric login (fingerprint/Face ID), encrypted data storage, SSL pinning, session management, and OWASP mobile security best practices implemented as standard.</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card" style="background:linear-gradient(135deg,#0F1E30,#1A2B4A);border:none;text-align:center;padding:28px">
+          <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">Starting from</div>
+          <div style="font-size:36px;font-weight:800;color:var(--mint)">KES 400,000</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:5px;margin-bottom:20px">Android + iOS · All modules · Published to both stores</div>
+          <button class="btn btn-white" style="width:100%" onclick="openModal('modal-quote')">Request a Quote →</button>
+        </div>
+        <div class="card">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px">⏱ 14-Week Timeline</div>
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:var(--mid)">UI/UX Design (Android & iOS)</span><span style="font-weight:600;color:var(--teal)">Weeks 1–2</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:var(--mid)">Development — All modules</span><span style="font-weight:600;color:var(--teal)">Weeks 3–10</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:var(--mid)">Testing & QA on devices</span><span style="font-weight:600;color:var(--teal)">Weeks 11–12</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:var(--mid)">Store submission & publishing</span><span style="font-weight:600;color:var(--teal)">Weeks 13–14</span></div>
+          </div>
+        </div>
+        <div class="card" style="background:var(--greenLt);border-color:var(--green)">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px">📦 Always Included</div>
+          <div style="display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--mid)">
+            <div>✓ Android + iOS builds</div>
+            <div>✓ M-Pesa Daraja integration</div>
+            <div>✓ Firebase push notifications</div>
+            <div>✓ Google Play Store publishing</div>
+            <div>✓ Apple App Store publishing</div>
+            <div>✓ Staff training on app management</div>
+            <div>✓ 3 months post-launch support</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:32px;height:32px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">💻</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#fff">Nemitech Solutions</div>
+            <div style="font-size:8px;color:var(--mint);letter-spacing:.8px">DIGITAL SYSTEMS & ICT CONSULTANCY</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);line-height:1.8;max-width:280px">Building institutions for a digital Kenya. Delivering ICT, digital systems, networking, and CCTV solutions to associations, enterprises, and institutions since 2022.</div>
+        <div class="social-pills">
+          <div class="social-pill">LinkedIn</div>
+          <div class="social-pill">Twitter/X</div>
+          <div class="social-pill">Facebook</div>
+        </div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Services</div>
+        <div class="footer-link" onclick="showPage('svc-web')">Web Development</div>
+        <div class="footer-link" onclick="showPage('svc-portal')">Member Portals & Software</div>
+        <div class="footer-link" onclick="showPage('svc-mobile')">Mobile App Development</div>
+        <div class="footer-link" onclick="showPage('svc-agri')">Digital Agriculture</div>
+        <div class="footer-link" onclick="showPage('svc-cloud')">Cloud Hosting</div>
+        <div class="footer-link" onclick="showPage('svc-cctv')">CCTV & Networking</div>
+        <div class="footer-link" onclick="showPage('svc-ict')">ICT Consultancy</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Company</div>
+        <div class="footer-link" onclick="showPage('about')">About Us</div>
+        <div class="footer-link" onclick="showPage('portfolio')">Portfolio</div>
+        <div class="footer-link" onclick="showPage('team')">Our Team</div>
+        <div class="footer-link" onclick="showPage('contact')">Contact Us</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Contact</div>
+        <div class="footer-link">📧 nemaeri@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📧 info@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📞 +254 710 652544</div>
+        <div class="footer-link">📍 Nairobi, Kenya</div>
+        <div class="footer-link">🌐 www.nemitech.co.ke</div>
+      </div>
+    </div>
+    <div class="footer-copy">© 2025 Nemitech Solutions · Digital Systems & ICT Consultancy · Nairobi, Kenya · All rights reserved</div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════
+     SERVICE 4: DIGITAL AGRICULTURE
+══════════════════════════════════════ -->
+<div id="pg-svc-agri" class="page">
+  <div class="page-hdr" style="background:linear-gradient(135deg,#1A3A1A 0%,#2E7D32 100%)">
+    <div class="page-hdr-inner">
+      <div class="breadcrumb">Home / Services / Digital Agriculture</div>
+      <div style="font-size:40px;margin-bottom:10px">🌾</div>
+      <div class="page-hdr-title">Digital Agriculture Platforms</div>
+      <div class="page-hdr-sub">Custom AgriTech platforms for livestock, crops, market linkage, and farmer advisory — built for Kenya's agricultural institutions</div>
+    </div>
+  </div>
+  <div class="body-wrap">
+    <div class="two-col">
+      <div>
+        <div class="section-label">Our AgriTech Expertise</div>
+        <div class="section-title">Digital Solutions Built for Kenya's Agriculture Sector</div>
+        <div style="font-size:12px;color:var(--mid);line-height:1.8;margin-top:12px;margin-bottom:20px">Nemitech Solutions brings deep practical experience in Kenya's agricultural digital systems space. Our team has worked closely with agricultural institutions, farmer cooperatives, and agribusiness enterprises to design and deliver digital platforms that serve real users in real Kenyan farming contexts.</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="card" style="border-left:4px solid var(--green);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">🐄 Livestock & Crop Management Systems</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Digital livestock registration, disease outbreak tracking, crop monitoring dashboards, and input usage systems for extension officers and county agriculture departments.</div>
+          </div>
+          <div class="card" style="border-left:4px solid var(--green);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">🤝 Contract Farming & Outgrower Systems</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Digital contract management for outgrower schemes, farmer-buyer matching, delivery tracking, and payment reconciliation through M-Pesa. Designed for Kenya's cooperative and agribusiness sector.</div>
+          </div>
+          <div class="card" style="border-left:4px solid var(--green);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">🛒 Market Linkage & E-Marketing Portals</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Online marketplace platforms connecting farmers to buyers, agro-dealers, and cooperatives. Includes price discovery, trade listing, and digital payments for agricultural produce.</div>
+          </div>
+          <div class="card" style="border-left:4px solid var(--green);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">🤖 AI-Powered Farmer Advisory Systems</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Conversational AI advisory systems for crop and livestock guidance, image-based plant disease classification, and data-driven yield prediction tools for smallholder farmers and extension services.</div>
+          </div>
+          <div class="card" style="border-left:4px solid var(--green);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">📊 M&E Dashboards for Development Programmes</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Monitoring and evaluation dashboards for donor-funded agricultural programmes. Custom reporting frameworks, indicator tracking, and beneficiary data management tailored to programme requirements.</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card" style="background:linear-gradient(135deg,#1A3A1A,#2E7D32);border:none;text-align:center;padding:28px">
+          <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">Custom Scoping</div>
+          <div style="font-size:28px;font-weight:800;color:var(--mint)">Request a Quote</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:5px;margin-bottom:20px">Scoped to your programme, target farmers, county reach, and donor requirements</div>
+          <button class="btn btn-white" style="width:100%" onclick="openModal('modal-project')">Discuss Your Project →</button>
+        </div>
+        <div class="card" style="background:var(--navy);border:none">
+          <div style="font-size:12px;font-weight:700;color:var(--mint);margin-bottom:10px">🏛️ Our Government AgriTech Clients</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ Agricultural Institution — Nairobi</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ agricultural research institutions — Kenya Agricultural & Livestock Research Organisation</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ development partners agricultural digital programmes Programme</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ agricultural development programmes — Naivasha, Nyeri, Meru</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7)">✓ food systems programmes — Food Systems Resilience Programme</div>
+        </div>
+        <div class="card" style="border-left:4px solid var(--green)">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px">🔗 Aligned Standards</div>
+          <div style="font-size:11px;color:var(--mid);line-height:1.7">All our agricultural platforms are built to Kenya's interoperability standards, mobile-first design principles, and M-Pesa payment infrastructure — ensuring they work seamlessly within Kenya's existing digital ecosystem.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:32px;height:32px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">💻</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#fff">Nemitech Solutions</div>
+            <div style="font-size:8px;color:var(--mint);letter-spacing:.8px">DIGITAL SYSTEMS & ICT CONSULTANCY</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);line-height:1.8;max-width:280px">Building institutions for a digital Kenya. Delivering ICT, digital systems, networking, and CCTV solutions to associations, enterprises, and institutions since 2022.</div>
+        <div class="social-pills">
+          <div class="social-pill">LinkedIn</div>
+          <div class="social-pill">Twitter/X</div>
+          <div class="social-pill">Facebook</div>
+        </div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Services</div>
+        <div class="footer-link" onclick="showPage('svc-web')">Web Development</div>
+        <div class="footer-link" onclick="showPage('svc-portal')">Member Portals & Software</div>
+        <div class="footer-link" onclick="showPage('svc-mobile')">Mobile App Development</div>
+        <div class="footer-link" onclick="showPage('svc-agri')">Digital Agriculture</div>
+        <div class="footer-link" onclick="showPage('svc-cloud')">Cloud Hosting</div>
+        <div class="footer-link" onclick="showPage('svc-cctv')">CCTV & Networking</div>
+        <div class="footer-link" onclick="showPage('svc-ict')">ICT Consultancy</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Company</div>
+        <div class="footer-link" onclick="showPage('about')">About Us</div>
+        <div class="footer-link" onclick="showPage('portfolio')">Portfolio</div>
+        <div class="footer-link" onclick="showPage('team')">Our Team</div>
+        <div class="footer-link" onclick="showPage('contact')">Contact Us</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Contact</div>
+        <div class="footer-link">📧 nemaeri@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📧 info@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📞 +254 710 652544</div>
+        <div class="footer-link">📍 Nairobi, Kenya</div>
+        <div class="footer-link">🌐 www.nemitech.co.ke</div>
+      </div>
+    </div>
+    <div class="footer-copy">© 2025 Nemitech Solutions · Digital Systems & ICT Consultancy · Nairobi, Kenya · All rights reserved</div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════
+     SERVICE 5: CLOUD HOSTING
+══════════════════════════════════════ -->
+<div id="pg-svc-cloud" class="page">
+  <div class="page-hdr" style="background:linear-gradient(135deg,#1A2B4A 0%,#1A4A5A 50%,#028090 100%)">
+    <div class="page-hdr-inner">
+      <div class="breadcrumb">Home / Services / Cloud Hosting & Infrastructure</div>
+      <div style="font-size:40px;margin-bottom:10px">☁️</div>
+      <div class="page-hdr-title">Cloud Hosting & Infrastructure</div>
+      <div class="page-hdr-sub">Managed cloud hosting with 99.9% uptime, automated backups, SSL, and full security monitoring — starting from KES 1,560/month</div>
+    </div>
+  </div>
+  <div class="body-wrap">
+    <div class="two-col">
+      <div>
+        <div class="section-label">Infrastructure We Manage</div>
+        <div class="section-title">Enterprise-Grade Hosting for Kenyan Institutions</div>
+        <div style="font-size:12px;color:var(--mid);line-height:1.8;margin-top:12px;margin-bottom:20px">Poor hosting is the hidden risk that kills digital platforms. A single outage during your membership drive, conference registration, or payment window can cost your institution more than a year of hosting fees. We manage infrastructure so your team never has to worry about uptime, backups, or security patches.</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div class="card" style="border-left:4px solid var(--teal);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">🖥️ Cloud Server Management</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Nginx web server, PHP 8.x, MySQL 8.0 database. Performance tuned and hardened for your specific platform. OS security patches applied automatically.</div>
+          </div>
+          <div class="card" style="border-left:4px solid var(--teal);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">🛡️ Cloudflare CDN & DDoS Protection</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Global CDN for fast page loads across Kenya and East Africa. DDoS mitigation, Web Application Firewall, and bot protection included as standard.</div>
+          </div>
+          <div class="card" style="border-left:4px solid var(--teal);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">💾 Automated Daily Backups</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Daily automated snapshots of your entire server and database with 30-day retention. Point-in-time recovery available within 4 hours for critical data loss events.</div>
+          </div>
+          <div class="card" style="border-left:4px solid var(--teal);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">📧 Email Delivery (SendGrid)</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Transactional email for receipts, certificates, renewal reminders, and member notifications via SendGrid. Configured with SPF/DKIM/DMARC to prevent landing in spam.</div>
+          </div>
+          <div class="card" style="border-left:4px solid var(--teal);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">📡 Uptime Monitoring</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">UptimeRobot Pro monitors your platform every 60 seconds. Instant SMS and email alerts to our team if any downtime is detected. Average response time under 15 minutes.</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <!-- Provider comparison -->
+        <div class="card">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:14px">☁️ Provider Options</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="background:var(--mintLt);border:2px solid var(--teal);border-radius:10px;padding:12px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                <div style="font-size:12px;font-weight:700;color:var(--navy)">AWS Lightsail Small</div>
+                <span style="font-size:9px;font-weight:700;background:var(--teal);color:#fff;padding:2px 8px;border-radius:10px">RECOMMENDED</span>
+              </div>
+              <div style="font-size:18px;font-weight:800;color:var(--teal)">~KES 1,560<span style="font-size:11px;color:var(--lt)">/month</span></div>
+              <div style="font-size:10px;color:var(--mid);margin-top:3px">2 vCPU · 2GB RAM · 60GB SSD · 3TB transfer</div>
+            </div>
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px">
+              <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:4px">Bluehost VPS Standard</div>
+              <div style="font-size:18px;font-weight:800;color:var(--mid)">~KES 2,469<span style="font-size:11px;color:var(--lt)">/month</span></div>
+              <div style="font-size:10px;color:var(--mid);margin-top:3px">30GB NVMe · 2GB RAM · cPanel included</div>
+            </div>
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px">
+              <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:4px">HostGator Snappy 2000</div>
+              <div style="font-size:18px;font-weight:800;color:var(--mid)">~KES 3,114<span style="font-size:11px;color:var(--lt)">/month</span></div>
+              <div style="font-size:10px;color:var(--mid);margin-top:3px">2 Core · 2GB RAM · 120GB SSD · Unmetered BW</div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="background:var(--redLt);border-color:var(--red)">
+          <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:8px">⚠️ The Cost of Poor Hosting</div>
+          <div style="font-size:11px;color:var(--mid);line-height:1.7">A single payment failure during a membership drive can cost KES 30,000–150,000 in lost fees. A data breach without SSL can expose member data and trigger legal liability of KES 500,000+. Good hosting is your cheapest insurance.</div>
+        </div>
+        <button class="btn btn-teal" style="width:100%" onclick="openModal('modal-quote')">Get Hosting Quote →</button>
+      </div>
+    </div>
+  </div>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:32px;height:32px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">💻</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#fff">Nemitech Solutions</div>
+            <div style="font-size:8px;color:var(--mint);letter-spacing:.8px">DIGITAL SYSTEMS & ICT CONSULTANCY</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);line-height:1.8;max-width:280px">Building institutions for a digital Kenya. Delivering ICT, digital systems, networking, and CCTV solutions to associations, enterprises, and institutions since 2022.</div>
+        <div class="social-pills">
+          <div class="social-pill">LinkedIn</div>
+          <div class="social-pill">Twitter/X</div>
+          <div class="social-pill">Facebook</div>
+        </div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Services</div>
+        <div class="footer-link" onclick="showPage('svc-web')">Web Development</div>
+        <div class="footer-link" onclick="showPage('svc-portal')">Member Portals & Software</div>
+        <div class="footer-link" onclick="showPage('svc-mobile')">Mobile App Development</div>
+        <div class="footer-link" onclick="showPage('svc-agri')">Digital Agriculture</div>
+        <div class="footer-link" onclick="showPage('svc-cloud')">Cloud Hosting</div>
+        <div class="footer-link" onclick="showPage('svc-cctv')">CCTV & Networking</div>
+        <div class="footer-link" onclick="showPage('svc-ict')">ICT Consultancy</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Company</div>
+        <div class="footer-link" onclick="showPage('about')">About Us</div>
+        <div class="footer-link" onclick="showPage('portfolio')">Portfolio</div>
+        <div class="footer-link" onclick="showPage('team')">Our Team</div>
+        <div class="footer-link" onclick="showPage('contact')">Contact Us</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Contact</div>
+        <div class="footer-link">📧 nemaeri@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📧 info@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📞 +254 710 652544</div>
+        <div class="footer-link">📍 Nairobi, Kenya</div>
+        <div class="footer-link">🌐 www.nemitech.co.ke</div>
+      </div>
+    </div>
+    <div class="footer-copy">© 2025 Nemitech Solutions · Digital Systems & ICT Consultancy · Nairobi, Kenya · All rights reserved</div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════
+     SERVICE 7: CCTV, NETWORKING & SUPPLIES
+══════════════════════════════════════ -->
+<div id="pg-svc-cctv" class="page">
+  <div class="page-hdr" style="background:linear-gradient(135deg,#2A1A4A 0%,#5A2A8A 100%)">
+    <div class="page-hdr-inner">
+      <div class="breadcrumb">Home / Services / CCTV, Networking & Supplies</div>
+      <div style="font-size:40px;margin-bottom:10px">📷</div>
+      <div class="page-hdr-title">CCTV, Networking & ICT Supplies</div>
+      <div class="page-hdr-sub">Security camera installation, structured network cabling, Wi-Fi, and ICT equipment supply for offices, institutions, and commercial premises across Kenya</div>
+    </div>
+  </div>
+  <div class="body-wrap">
+    <div class="two-col">
+      <div>
+        <div class="section-label">What We Install & Supply</div>
+        <div class="section-title">Complete Physical ICT Infrastructure</div>
+        <div style="font-size:12px;color:var(--mid);line-height:1.8;margin-top:12px;margin-bottom:20px">Beyond software and digital platforms, Nemitech Solutions provides end-to-end physical ICT infrastructure — from CCTV security systems and structured network cabling to Wi-Fi access points and ICT equipment procurement. We supply, install, configure, and maintain.</div>
+
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="card" style="border-left:4px solid #8B5CF6;padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">📷 CCTV Security Systems</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">IP and analog CCTV camera installation for offices, compounds, warehouses, and institutional premises. We supply and install Hikvision, Dahua, and other leading brands — with remote monitoring setup so you can view your premises from your phone anywhere.</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+              <span class="svc-tag">IP Cameras</span><span class="svc-tag">Night Vision</span><span class="svc-tag">Remote Viewing</span><span class="svc-tag">Motion Detection</span>
+            </div>
+          </div>
+          <div class="card" style="border-left:4px solid #8B5CF6;padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">🔌 Structured Network Cabling</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Cat5e and Cat6 structured cabling for office networks, server rooms, and institutional premises. We design and install patch panels, switch racks, cable trays, and termination points — clean, labelled, and tested to standard.</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+              <span class="svc-tag">Cat6 Cabling</span><span class="svc-tag">Patch Panels</span><span class="svc-tag">Server Racks</span><span class="svc-tag">Cable Testing</span>
+            </div>
+          </div>
+          <div class="card" style="border-left:4px solid #8B5CF6;padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">📶 Wi-Fi Network Setup</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Enterprise Wi-Fi solutions for offices, conference halls, hotels, and institutions. Access point placement planning, coverage mapping, SSID configuration, and network segmentation for staff and guest networks. Brands: Ubiquiti UniFi, Mikrotik, TP-Link EAP.</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+              <span class="svc-tag">UniFi</span><span class="svc-tag">Mikrotik</span><span class="svc-tag">Guest Network</span><span class="svc-tag">Coverage Mapping</span>
+            </div>
+          </div>
+          <div class="card" style="border-left:4px solid #8B5CF6;padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">🖥️ ICT Equipment Supply</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Supply of computers, laptops, servers, printers, UPS systems, routers, switches, and ICT accessories for offices and institutions. We source from authorised distributors, provide warranties, and handle delivery and setup across Nairobi and major Kenyan towns.</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+              <span class="svc-tag">Computers</span><span class="svc-tag">Servers</span><span class="svc-tag">Printers</span><span class="svc-tag">UPS</span><span class="svc-tag">Networking Gear</span>
+            </div>
+          </div>
+          <div class="card" style="border-left:4px solid #8B5CF6;padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">🔧 Maintenance & Support Contracts</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Scheduled preventive maintenance for CCTV systems and network infrastructure. Annual maintenance contracts available with priority response times, quarterly checks, firmware updates, and on-call technical support for critical systems.</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+              <span class="svc-tag">Preventive Maintenance</span><span class="svc-tag">Annual Contract</span><span class="svc-tag">On-Call Support</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card" style="background:linear-gradient(135deg,#2A1A4A,#5A2A8A);border:none;text-align:center;padding:28px">
+          <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">Starting from</div>
+          <div style="font-size:36px;font-weight:800;color:#C4B5FD">KES 45,000</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:5px;margin-bottom:20px">4-camera CCTV system · supply, installation & configuration</div>
+          <button class="btn btn-white" style="width:100%" onclick="openModal('modal-quote')">Request a Quote →</button>
+        </div>
+        <div class="card">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:12px">📦 CCTV Package Options</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="background:var(--bg);border-radius:10px;padding:12px">
+              <div style="font-size:12px;font-weight:700;color:var(--navy)">Starter — 4 Cameras</div>
+              <div style="font-size:18px;font-weight:800;color:#8B5CF6;margin:4px 0">KES 45,000</div>
+              <div style="font-size:10px;color:var(--mid)">4 IP cameras · 1TB DVR · Remote viewing · Installation</div>
+            </div>
+            <div style="background:var(--bg);border-radius:10px;padding:12px;border:2px solid #8B5CF6">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                <div style="font-size:12px;font-weight:700;color:var(--navy)">Business — 8 Cameras</div>
+                <span style="font-size:9px;font-weight:700;background:#8B5CF6;color:#fff;padding:2px 7px;border-radius:10px">POPULAR</span>
+              </div>
+              <div style="font-size:18px;font-weight:800;color:#8B5CF6;margin:4px 0">KES 85,000</div>
+              <div style="font-size:10px;color:var(--mid)">8 IP cameras · 2TB NVR · Night vision · Remote app setup</div>
+            </div>
+            <div style="background:var(--bg);border-radius:10px;padding:12px">
+              <div style="font-size:12px;font-weight:700;color:var(--navy)">Enterprise — 16+ Cameras</div>
+              <div style="font-size:18px;font-weight:800;color:#8B5CF6;margin:4px 0">Custom</div>
+              <div style="font-size:10px;color:var(--mid)">Full premises survey · Custom design · Annual maintenance</div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="background:#F3E8FF;border-color:#8B5CF6">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px">✅ All Installations Include</div>
+          <div style="display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--mid)">
+            <div>✓ Site survey and camera placement plan</div>
+            <div>✓ Supply of cameras, DVR/NVR, cables & accessories</div>
+            <div>✓ Professional installation & cable concealment</div>
+            <div>✓ Remote viewing app setup on your phone</div>
+            <div>✓ Staff training on system operation</div>
+            <div>✓ 1-year warranty on equipment</div>
+            <div>✓ 3 months free support after installation</div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px">📍 Coverage Areas</div>
+          <div style="font-size:11px;color:var(--mid);line-height:1.7">We install across Nairobi and its environs. For upcountry installations, we offer site visit packages — contact us for a quote based on your location.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- ══════════════════════════════════════
+     SERVICE 6: ICT CONSULTANCY
+══════════════════════════════════════ -->
+<div id="pg-svc-ict" class="page">
+  <div class="page-hdr" style="background:linear-gradient(135deg,#1A2B4A 0%,#3A2A1A 50%,#7A5A2A 100%)">
+    <div class="page-hdr-inner">
+      <div class="breadcrumb">Home / Services / ICT Consultancy & Data Systems</div>
+      <div style="font-size:40px;margin-bottom:10px">📊</div>
+      <div class="page-hdr-title">ICT Consultancy & Data Systems</div>
+      <div class="page-hdr-sub">Strategic digital transformation advisory, data governance frameworks, and M&E dashboards for government and institutional clients</div>
+    </div>
+  </div>
+  <div class="body-wrap">
+    <div class="two-col">
+      <div>
+        <div class="section-label">Advisory & Strategy</div>
+        <div class="section-title">ICT Expertise Rooted in Government Experience</div>
+        <div style="font-size:12px;color:var(--mid);line-height:1.8;margin-top:12px;margin-bottom:20px">Our consultancy practice is built on real institutional experience — not textbook frameworks. Our team has designed and implemented digital systems across government agencies, professional associations, and development institutions. We advise at the strategy level and implement at the system level — bridging the gap between policy and working technology.</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="card" style="border-left:4px solid var(--amber);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">🗺️ Digital Transformation Roadmaps</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Structured digital transformation plans for government agencies, county departments, and professional bodies. Includes situational analysis, priority digital investments, phased implementation plans, and budget frameworks.</div>
+          </div>
+          <div class="card" style="border-left:4px solid var(--amber);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">📋 Data Governance Frameworks</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Data governance policy development, data quality frameworks, metadata standards, and data architecture for agricultural and government institutions. Includes stakeholder workshops, documentation, and validation sessions.</div>
+          </div>
+          <div class="card" style="border-left:4px solid var(--amber);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">📈 M&E Dashboards & Reporting Systems</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Interactive monitoring and evaluation dashboards for donor-funded programmes. Indicator tracking, beneficiary data management, progress reporting, and automated report generation aligned to donor requirements.</div>
+          </div>
+          <div class="card" style="border-left:4px solid var(--amber);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">🎓 ICT Capacity Building</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Structured training programmes for government ICT teams — from basic digital literacy to advanced data management, system administration, and digital agriculture tools. Delivered as workshops, manuals, and recorded sessions.</div>
+          </div>
+          <div class="card" style="border-left:4px solid var(--amber);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px">🤝 Technology Partnership Advisory</div>
+            <div style="font-size:11px;color:var(--mid);line-height:1.7">Independent advice on vendor selection, technology partnerships, AgTech ecosystems, and digital platform procurement — helping institutions make informed, cost-effective ICT investment decisions.</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card" style="background:linear-gradient(135deg,#3A2A1A,#7A5A2A);border:none;text-align:center;padding:28px">
+          <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">Engagement-Based Pricing</div>
+          <div style="font-size:28px;font-weight:800;color:var(--amber)">Request a Proposal</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:5px;margin-bottom:20px">Day-rate, retainer, and project-based options available</div>
+          <button class="btn btn-white" style="width:100%" onclick="openModal('modal-project')">Request Consultation →</button>
+        </div>
+        <div class="card" style="background:var(--navy);border:none">
+          <div style="font-size:12px;font-weight:700;color:var(--mint);margin-bottom:12px">🏛️ Institutional Clients Served</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ Agricultural Institution — Nairobi (agricultural institutions)</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ Kenya Agricultural & Livestock Research Organisation (agricultural research institutions)</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ development partners agricultural digital programmes Programme</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ agricultural development programmes — Naivasha Area Value Chain Development</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">✓ national data systems — Kenya Integrated Agricultural MIS</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7)">✓ International Innovation Days 2026</div>
+        </div>
+        <div class="card" style="border-left:4px solid var(--amber)">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px">📖 Academic Grounding</div>
+          <div style="font-size:11px;color:var(--mid);line-height:1.7">Our consulting work is backed by ongoing academic research and continuous professional development. Our lead consultant has deep expertise in software systems and AI — ensuring our advisory is informed by the latest in intelligent systems, data architecture, and modern digital platform design.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:32px;height:32px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">💻</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#fff">Nemitech Solutions</div>
+            <div style="font-size:8px;color:var(--mint);letter-spacing:.8px">DIGITAL SYSTEMS & ICT CONSULTANCY</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);line-height:1.8;max-width:280px">Building institutions for a digital Kenya. Delivering ICT, digital systems, networking, and CCTV solutions to associations, enterprises, and institutions since 2022.</div>
+        <div class="social-pills">
+          <div class="social-pill">LinkedIn</div>
+          <div class="social-pill">Twitter/X</div>
+          <div class="social-pill">Facebook</div>
+        </div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Services</div>
+        <div class="footer-link" onclick="showPage('svc-web')">Web Development</div>
+        <div class="footer-link" onclick="showPage('svc-portal')">Member Portals & Software</div>
+        <div class="footer-link" onclick="showPage('svc-mobile')">Mobile App Development</div>
+        <div class="footer-link" onclick="showPage('svc-agri')">Digital Agriculture</div>
+        <div class="footer-link" onclick="showPage('svc-cloud')">Cloud Hosting</div>
+        <div class="footer-link" onclick="showPage('svc-cctv')">CCTV & Networking</div>
+        <div class="footer-link" onclick="showPage('svc-ict')">ICT Consultancy</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Company</div>
+        <div class="footer-link" onclick="showPage('about')">About Us</div>
+        <div class="footer-link" onclick="showPage('portfolio')">Portfolio</div>
+        <div class="footer-link" onclick="showPage('team')">Our Team</div>
+        <div class="footer-link" onclick="showPage('contact')">Contact Us</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Contact</div>
+        <div class="footer-link">📧 nemaeri@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📧 info@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📞 +254 710 652544</div>
+        <div class="footer-link">📍 Nairobi, Kenya</div>
+        <div class="footer-link">🌐 www.nemitech.co.ke</div>
+      </div>
+    </div>
+    <div class="footer-copy">© 2025 Nemitech Solutions · Digital Systems & ICT Consultancy · Nairobi, Kenya · All rights reserved</div>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     PORTFOLIO PAGE
+══════════════════════════════════════ -->
+<div id="pg-portfolio" class="page">
+  <div class="page-hdr">
+    <div class="page-hdr-inner">
+      <div class="breadcrumb">Home / Portfolio</div>
+      <div class="page-hdr-title">Our Portfolio</div>
+      <div class="page-hdr-sub">Live platforms delivered across government, agriculture, health, real estate, and professional associations</div>
+    </div>
+  </div>
+  <div class="body-wrap">
+    <div class="filter-bar" id="portFilter">
+      <div class="filter-pill active" onclick="filterPort(this,'All')">All Projects</div>
+      <div class="filter-pill" onclick="filterPort(this,'Government')">Government</div>
+      <div class="filter-pill" onclick="filterPort(this,'Agriculture')">Agriculture</div>
+      <div class="filter-pill" onclick="filterPort(this,'Association')">Associations</div>
+      <div class="filter-pill" onclick="filterPort(this,'Private')">Private Sector</div>
+    </div>
+    <div class="portfolio-grid">
+
+      <div class="port-card" data-cat="Association" onclick="alert('KAHA Digital Platform\n\nFull-stack web application for the Kenya Association of Health Administrators including member portal, M-Pesa payment, digital certificates, admin dashboard, and Mobile App (Phase 2).')">
+        <div class="port-thumb" style="background:linear-gradient(135deg,#4A1A2B,#8B1A3A)"><span style="font-size:52px">🏥</span></div>
+        <div class="port-body">
+          <div class="port-title">KAHA Digital Platform</div>
+          <div class="port-client">Kenya Association of Health Administrators</div>
+          <div style="font-size:10px;color:var(--teal);margin-bottom:8px">kaha.or.ke (in development)</div>
+          <div class="port-tags"><span class="badge" style="background:var(--mintLt);color:var(--teal)">Association</span><span class="badge" style="background:var(--greenLt);color:var(--green)">M-Pesa</span><span class="badge" style="background:#EFF4FF;color:#2563EB">Mobile App</span></div>
+        </div>
+      </div>
+
+      <div class="port-card" data-cat="Agriculture" onclick="alert('Cassava Vet & MRD Platform\n\nVeterinary and market research & development portal for cassava value chain actors.\n\nURL: cassava.vetclinic-mrd.com')">
+        <div class="port-thumb" style="background:linear-gradient(135deg,#2A1A3A,#5A2A7A)"><span style="font-size:52px">🌿</span></div>
+        <div class="port-body">
+          <div class="port-title">Cassava Value Chain Platform</div>
+          <div class="port-client">Cassava MRD Programme</div>
+          <div style="font-size:10px;color:var(--teal);margin-bottom:8px">cassava.vetclinic-mrd.com</div>
+          <div class="port-tags"><span class="badge" style="background:var(--greenLt);color:var(--green)">Agriculture</span><span class="badge" style="background:var(--mintLt);color:var(--teal)">Value Chain</span></div>
+        </div>
+      </div>
+
+      <div class="port-card" data-cat="Agriculture" onclick="alert('National Cassava Programme\n\nNational platform for Kenya\'s cassava development programme.\n\nURL: nationalcassava.vetclinic-mrd.com')">
+        <div class="port-thumb" style="background:linear-gradient(135deg,#1A3A2A,#2A7A4A)"><span style="font-size:52px">🌱</span></div>
+        <div class="port-body">
+          <div class="port-title">National Cassava Programme</div>
+          <div class="port-client">National Cassava Development Programme</div>
+          <div style="font-size:10px;color:var(--teal);margin-bottom:8px">nationalcassava.vetclinic-mrd.com</div>
+          <div class="port-tags"><span class="badge" style="background:var(--greenLt);color:var(--green)">Agriculture</span><span class="badge" style="background:var(--amberLt);color:var(--amber)">Government</span></div>
+        </div>
+      </div>
+
+      <div class="port-card" data-cat="Private Agriculture" onclick="alert('AgroVet Platform\n\nVeterinary products and services platform for agrovet dealers.\n\nURL: agrovet.vetclinic-mrd.com')">
+        <div class="port-thumb" style="background:linear-gradient(135deg,#1A2A3A,#2A5A7A)"><span style="font-size:52px">💊</span></div>
+        <div class="port-body">
+          <div class="port-title">AgroVet Digital Platform</div>
+          <div class="port-client">AgroVet MRD Network</div>
+          <div style="font-size:10px;color:var(--teal);margin-bottom:8px">agrovet.vetclinic-mrd.com</div>
+          <div class="port-tags"><span class="badge" style="background:var(--mintLt);color:var(--teal)">Private</span><span class="badge" style="background:var(--greenLt);color:var(--green)">AgriTech</span></div>
+        </div>
+      </div>
+
+      <div class="port-card" data-cat="Private" onclick="alert('Tehila Realtors Platform\n\nReal estate listings and property management platform.\n\nURL: tehilarealtors.vetclinic-mrd.com')">
+        <div class="port-thumb" style="background:linear-gradient(135deg,#2A1A1A,#6A2A2A)"><span style="font-size:52px">🏠</span></div>
+        <div class="port-body">
+          <div class="port-title">Tehila Realtors Platform</div>
+          <div class="port-client">Tehila Realtors</div>
+          <div style="font-size:10px;color:var(--teal);margin-bottom:8px">tehilarealtors.vetclinic-mrd.com</div>
+          <div class="port-tags"><span class="badge" style="background:var(--amberLt);color:var(--amber)">Private</span><span class="badge" style="background:#EFF4FF;color:#2563EB">Real Estate</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="cta-banner" style="margin-top:40px">
+      <div class="cta-text">
+        <div class="cta-title">Have a Project in Mind?</div>
+        <div class="cta-sub">We would love to add your platform to this portfolio. Tell us what you need and we will deliver it — on time, within budget, and built to last.</div>
+      </div>
+      <button class="btn btn-white" onclick="openModal('modal-project')">Start Your Project →</button>
+    </div>
+  </div>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:32px;height:32px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">💻</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#fff">Nemitech Solutions</div>
+            <div style="font-size:8px;color:var(--mint);letter-spacing:.8px">DIGITAL SYSTEMS & ICT CONSULTANCY</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);line-height:1.8;max-width:280px">Building institutions for a digital Kenya. Delivering ICT, digital systems, networking, and CCTV solutions to associations, enterprises, and institutions since 2022.</div>
+        <div class="social-pills">
+          <div class="social-pill">LinkedIn</div>
+          <div class="social-pill">Twitter/X</div>
+          <div class="social-pill">Facebook</div>
+        </div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Services</div>
+        <div class="footer-link" onclick="showPage('svc-web')">Web Development</div>
+        <div class="footer-link" onclick="showPage('svc-portal')">Member Portals & Software</div>
+        <div class="footer-link" onclick="showPage('svc-mobile')">Mobile App Development</div>
+        <div class="footer-link" onclick="showPage('svc-agri')">Digital Agriculture</div>
+        <div class="footer-link" onclick="showPage('svc-cloud')">Cloud Hosting</div>
+        <div class="footer-link" onclick="showPage('svc-cctv')">CCTV & Networking</div>
+        <div class="footer-link" onclick="showPage('svc-ict')">ICT Consultancy</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Company</div>
+        <div class="footer-link" onclick="showPage('about')">About Us</div>
+        <div class="footer-link" onclick="showPage('portfolio')">Portfolio</div>
+        <div class="footer-link" onclick="showPage('team')">Our Team</div>
+        <div class="footer-link" onclick="showPage('contact')">Contact Us</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Contact</div>
+        <div class="footer-link">📧 nemaeri@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📧 info@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📞 +254 710 652544</div>
+        <div class="footer-link">📍 Nairobi, Kenya</div>
+        <div class="footer-link">🌐 www.nemitech.co.ke</div>
+      </div>
+    </div>
+    <div class="footer-copy">© 2025 Nemitech Solutions · Digital Systems & ICT Consultancy · Nairobi, Kenya · All rights reserved</div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════
+     TEAM PAGE
+══════════════════════════════════════ -->
+<div id="pg-team" class="page">
+  <div class="page-hdr">
+    <div class="page-hdr-inner">
+      <div class="breadcrumb">Home / Our Team</div>
+      <div class="page-hdr-title">Our Team</div>
+      <div class="page-hdr-sub">Experienced ICT professionals with deep Kenyan institutional knowledge</div>
+    </div>
+  </div>
+  <div class="body-wrap">
+    <div class="team-grid">
+      <div class="team-card">
+        <div class="team-avatar" style="background:linear-gradient(135deg,var(--navy),var(--teal))"><span style="font-size:32px">👨‍💻</span></div>
+        <div class="team-name">Nehemiah Amenya Maeri</div>
+        <div class="team-role">Managing Director & Lead Developer</div>
+        <div class="team-bio">Digital systems specialist with deep experience delivering ICT platforms across government, health, agriculture, and private sector institutions in Kenya. Specialist in software systems and AI-powered digital platforms.</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar" style="background:linear-gradient(135deg,var(--teal),var(--mint))"><span style="font-size:32px">👨‍🎨</span></div>
+        <div class="team-name">David Chomba</div>
+        <div class="team-role">Head of Design & Frontend</div>
+        <div class="team-bio">UI/UX designer and frontend developer specialising in institutional portals, mobile-first responsive design, and accessible digital experiences for Kenyan users.</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar" style="background:linear-gradient(135deg,var(--amber),#c47a3a)"><span style="font-size:32px">👨‍💼</span></div>
+        <div class="team-name">Jimmy K.</div>
+        <div class="team-role">Business Development Lead</div>
+        <div class="team-bio">Client relationship manager and proposal specialist. Experienced in government procurement, donor-funded ICT projects, and professional association digital transformation engagements.</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar" style="background:linear-gradient(135deg,var(--green),#155a34)"><span style="font-size:32px">👩‍💻</span></div>
+        <div class="team-name">Backend & DevOps Team</div>
+        <div class="team-role">Infrastructure & Systems Engineers</div>
+        <div class="team-bio">Experienced backend developers and DevOps engineers managing cloud infrastructure on AWS, database administration, M-Pesa API integration, and CI/CD deployments.</div>
+      </div>
+    </div>
+
+    <div style="margin:48px 0 0">
+      <div style="text-align:center;margin-bottom:28px">
+        <div class="section-label">Work with Us</div>
+        <div class="section-title" style="margin:0 auto">Join the Nemitech Team</div>
+        <div class="section-sub" style="margin:10px auto 0">We are always looking for talented Kenyan developers, designers, and ICT professionals who are passionate about building digital solutions that matter.</div>
+      </div>
+      <div class="two-col-equal">
+        <div class="card" style="border-left:4px solid var(--teal)">
+          <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px">Frontend Developer (React/Vue)</div>
+          <div style="font-size:11px;color:var(--mid);line-height:1.7;margin-bottom:12px">Looking for a skilled frontend developer with experience in React or Vue.js, Tailwind CSS, and mobile-responsive development. Experience with government or institutional projects a plus.</div>
+          <button class="btn btn-outline btn-sm" onclick="showPage('contact')">Apply Now →</button>
+        </div>
+        <div class="card" style="border-left:4px solid var(--amber)">
+          <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px">Mobile App Developer (Flutter/Kotlin)</div>
+          <div style="font-size:11px;color:var(--mid);line-height:1.7;margin-bottom:12px">Seeking an experienced Android/iOS developer with Flutter or native Kotlin/Swift skills. M-Pesa Daraja API experience and Google Play/App Store publishing knowledge required.</div>
+          <button class="btn btn-outline btn-sm" style="border-color:var(--amber);color:var(--amber)" onclick="showPage('contact')">Apply Now →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:32px;height:32px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">💻</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#fff">Nemitech Solutions</div>
+            <div style="font-size:8px;color:var(--mint);letter-spacing:.8px">DIGITAL SYSTEMS & ICT CONSULTANCY</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);line-height:1.8;max-width:280px">Building institutions for a digital Kenya. Delivering ICT, digital systems, networking, and CCTV solutions to associations, enterprises, and institutions since 2022.</div>
+        <div class="social-pills">
+          <div class="social-pill">LinkedIn</div>
+          <div class="social-pill">Twitter/X</div>
+          <div class="social-pill">Facebook</div>
+        </div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Services</div>
+        <div class="footer-link" onclick="showPage('svc-web')">Web Development</div>
+        <div class="footer-link" onclick="showPage('svc-portal')">Member Portals & Software</div>
+        <div class="footer-link" onclick="showPage('svc-mobile')">Mobile App Development</div>
+        <div class="footer-link" onclick="showPage('svc-agri')">Digital Agriculture</div>
+        <div class="footer-link" onclick="showPage('svc-cloud')">Cloud Hosting</div>
+        <div class="footer-link" onclick="showPage('svc-cctv')">CCTV & Networking</div>
+        <div class="footer-link" onclick="showPage('svc-ict')">ICT Consultancy</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Company</div>
+        <div class="footer-link" onclick="showPage('about')">About Us</div>
+        <div class="footer-link" onclick="showPage('portfolio')">Portfolio</div>
+        <div class="footer-link" onclick="showPage('team')">Our Team</div>
+        <div class="footer-link" onclick="showPage('contact')">Contact Us</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Contact</div>
+        <div class="footer-link">📧 nemaeri@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📧 info@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📞 +254 710 652544</div>
+        <div class="footer-link">📍 Nairobi, Kenya</div>
+        <div class="footer-link">🌐 www.nemitech.co.ke</div>
+      </div>
+    </div>
+    <div class="footer-copy">© 2025 Nemitech Solutions · Digital Systems & ICT Consultancy · Nairobi, Kenya · All rights reserved</div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════
+     CONTACT PAGE
+══════════════════════════════════════ -->
+<div id="pg-contact" class="page">
+  <div class="page-hdr">
+    <div class="page-hdr-inner">
+      <div class="breadcrumb">Home / Contact Us</div>
+      <div class="page-hdr-title">Contact Nemitech Solutions</div>
+      <div class="page-hdr-sub">Reach us directly — we respond within 24 hours</div>
+    </div>
+  </div>
+  <div class="body-wrap">
+
+    <!-- 3 WAYS TO REACH US -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:36px">
+      <div class="card" style="text-align:center;border-top:4px solid var(--teal);cursor:pointer" onclick="openModal('modal-contact')">
+        <div style="font-size:36px;margin-bottom:12px">💬</div>
+        <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:6px">Send a Message</div>
+        <div style="font-size:11px;color:var(--mid);line-height:1.6;margin-bottom:16px">General enquiries, support questions, or just want to say hello? Reach our team directly.</div>
+        <button class="btn btn-outline btn-sm" style="width:100%" onclick="openModal('modal-contact')">Open Form →</button>
+      </div>
+      <div class="card" style="text-align:center;border-top:4px solid var(--amber);cursor:pointer" onclick="openModal('modal-quote')">
+        <div style="font-size:36px;margin-bottom:12px">💰</div>
+        <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:6px">Get a Quote</div>
+        <div style="font-size:11px;color:var(--mid);line-height:1.6;margin-bottom:16px">Know what you need? Tell us your service, budget, and timeline and we will send a detailed quote.</div>
+        <button class="btn btn-sm" style="width:100%;background:var(--amber);color:#fff;border:none" onclick="openModal('modal-quote')">Request Quote →</button>
+      </div>
+      <div class="card" style="text-align:center;border-top:4px solid var(--teal);cursor:pointer" onclick="openModal('modal-project')">
+        <div style="font-size:36px;margin-bottom:12px">🚀</div>
+        <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:6px">Start a Project</div>
+        <div style="font-size:11px;color:var(--mid);line-height:1.6;margin-bottom:16px">Ready to begin? Share your full project brief and we will schedule a discovery call within 48 hours.</div>
+        <button class="btn btn-teal btn-sm" style="width:100%" onclick="openModal('modal-project')">Brief Us →</button>
+      </div>
+    </div>
+
+    <!-- CONTACT INFO GRID -->
+    <div class="two-col-equal" style="margin-bottom:36px">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="contact-info-card"><div class="contact-icon">📧</div><div><div style="font-size:10px;color:var(--lt)">General Enquiries</div><a href="mailto:info@nemitechsolutions.co.ke" style="font-size:12px;font-weight:600;color:var(--teal)">info@nemitechsolutions.co.ke</a></div></div>
+        <div class="contact-info-card"><div class="contact-icon">📧</div><div><div style="font-size:10px;color:var(--lt)">Managing Director</div><a href="mailto:nemaeri@nemitechsolutions.co.ke" style="font-size:12px;font-weight:600;color:var(--teal)">nemaeri@nemitechsolutions.co.ke</a></div></div>
+        <div class="contact-info-card"><div class="contact-icon">📞</div><div><div style="font-size:10px;color:var(--lt)">Phone / WhatsApp</div><a href="tel:+254710652544" style="font-size:12px;font-weight:600;color:var(--text)">+254 710 652544</a></div></div>
+        <div class="contact-info-card"><div class="contact-icon">📍</div><div><div style="font-size:10px;color:var(--lt)">Location</div><div style="font-size:12px;font-weight:600;color:var(--text)">Nairobi, Kenya</div></div></div>
+        <div class="contact-info-card"><div class="contact-icon">🌐</div><div><div style="font-size:10px;color:var(--lt)">Website</div><div style="font-size:12px;font-weight:600;color:var(--text)">www.nemitech.co.ke</div></div></div>
+        <div class="contact-info-card"><div class="contact-icon">🕐</div><div><div style="font-size:10px;color:var(--lt)">Office Hours</div><div style="font-size:12px;font-weight:600;color:var(--text)">Mon – Fri, 8am – 6pm EAT</div></div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="background:var(--navy);border-radius:12px;padding:20px;flex:1">
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:8px">⚡ Fast Response Guarantee</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.6);line-height:1.7;margin-bottom:16px">All enquiries responded to within <strong style="color:var(--mint)">24 hours</strong>. Project briefs get a scoping call within <strong style="color:var(--mint)">48 hours</strong>. For urgent matters, call or WhatsApp directly.</div>
+          <div style="font-size:11px;font-weight:700;color:var(--mint);margin-bottom:10px">Follow Nemitech Solutions</div>
+          <div class="social-pills">
+            <div class="social-pill">LinkedIn</div>
+            <div class="social-pill">Twitter/X</div>
+            <div class="social-pill">Facebook</div>
+          </div>
+        </div>
+        <div class="card" style="background:var(--mintLt);border-color:var(--teal)">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px">🗂️ What to prepare before contacting us</div>
+          <div style="display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--mid)">
+            <div>✓ What platform or system you need built</div>
+            <div>✓ Who it will serve (members, staff, customers)</div>
+            <div>✓ Your approximate budget or budget range</div>
+            <div>✓ Your preferred go-live timeline</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:32px;height:32px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">💻</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#fff">Nemitech Solutions</div>
+            <div style="font-size:8px;color:var(--mint);letter-spacing:.8px">DIGITAL SYSTEMS & ICT CONSULTANCY</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);line-height:1.8;max-width:280px">Building institutions for a digital Kenya. Delivering ICT, digital systems, networking, and CCTV solutions to associations, enterprises, and institutions since 2022.</div>
+        <div class="social-pills">
+          <div class="social-pill">LinkedIn</div>
+          <div class="social-pill">Twitter/X</div>
+          <div class="social-pill">Facebook</div>
+        </div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Services</div>
+        <div class="footer-link" onclick="showPage('svc-web')">Web Development</div>
+        <div class="footer-link" onclick="showPage('svc-portal')">Member Portals & Software</div>
+        <div class="footer-link" onclick="showPage('svc-mobile')">Mobile App Development</div>
+        <div class="footer-link" onclick="showPage('svc-agri')">Digital Agriculture</div>
+        <div class="footer-link" onclick="showPage('svc-cloud')">Cloud Hosting</div>
+        <div class="footer-link" onclick="showPage('svc-cctv')">CCTV & Networking</div>
+        <div class="footer-link" onclick="showPage('svc-ict')">ICT Consultancy</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Company</div>
+        <div class="footer-link" onclick="showPage('about')">About Us</div>
+        <div class="footer-link" onclick="showPage('portfolio')">Portfolio</div>
+        <div class="footer-link" onclick="showPage('team')">Our Team</div>
+        <div class="footer-link" onclick="showPage('contact')">Contact Us</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-title">Contact</div>
+        <div class="footer-link">📧 nemaeri@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📧 info@nemitechsolutions.co.ke</div>
+        <div class="footer-link">📞 +254 710 652544</div>
+        <div class="footer-link">📍 Nairobi, Kenya</div>
+        <div class="footer-link">🌐 www.nemitech.co.ke</div>
+      </div>
+    </div>
+    <div class="footer-copy">© 2025 Nemitech Solutions · Digital Systems & ICT Consultancy · Nairobi, Kenya · All rights reserved</div>
+  </footer>
+</div>
+
+<script>
+function showPage(pageId, linkEl) {
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const pg = document.getElementById('pg-'+pageId);
+  if(pg) pg.classList.add('active');
+  // Update nav highlight using data-page attribute
+  document.querySelectorAll('.sn-link').forEach(l => l.classList.remove('active'));
+  const navLink = linkEl || document.querySelector('.sn-link[data-page="'+pageId+'"]');
+  if(navLink) navLink.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function toggleDropdown(e) {
+  e.stopPropagation();
+  const dd = e.target.closest('.sn-dropdown');
+  const isOpen = dd.classList.contains('open');
+  document.querySelectorAll('.sn-dropdown').forEach(d => d.classList.remove('open'));
+  if(!isOpen) dd.classList.add('open');
+}
+document.addEventListener('click', () => {
+  document.querySelectorAll('.sn-dropdown').forEach(d => d.classList.remove('open'));
+});
+
+function filterPort(pillEl, cat) {
+  document.querySelectorAll('#portFilter .filter-pill').forEach(p => p.classList.remove('active'));
+  pillEl.classList.add('active');
+  document.querySelectorAll('#pg-portfolio .port-card').forEach(card => {
+    card.style.display = (cat === 'All' || (card.dataset.cat && card.dataset.cat.includes(cat))) ? 'block' : 'none';
+  });
+}
+
+// ── MODAL SYSTEM ──────────────────────────────────────────────────
+function openModal(id) {
+  document.querySelectorAll('.nt-modal-overlay').forEach(m => m.style.display = 'none');
+  const m = document.getElementById(id);
+  if(m){ m.style.display = 'flex'; document.body.style.overflow='hidden'; }
+}
+function closeModal(id) {
+  const m = document.getElementById(id);
+  if(m){ m.style.display = 'none'; document.body.style.overflow=''; }
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') { document.querySelectorAll('.nt-modal-overlay').forEach(m=>m.style.display='none'); document.body.style.overflow=''; }});
+
+// ── FORM SUBMISSION via Formspree ─────────────────────────────────
+async function submitForm(formId, successMsg) {
+  const form = document.getElementById(formId);
+  const inputs = form.querySelectorAll('[required]');
+  let valid = true;
+  inputs.forEach(inp => {
+    if(!inp.value.trim()){ inp.style.borderColor='var(--red)'; valid=false; }
+    else inp.style.borderColor='';
+  });
+  if(!valid){ alert('Please fill in all required fields before submitting.'); return; }
+
+  const btn = form.querySelector('button[type="submit"]');
+  const origText = btn.textContent;
+  btn.textContent = 'Sending...'; btn.disabled = true;
+
+  // Collect all form data into email body for mailto fallback
+  const data = new FormData(form);
+  let body = '';
+  for(let [k,v] of data.entries()) body += k+': '+v+'\n';
+
+  // Try Formspree first
+  try {
+    const res = await fetch(form.action, {
+      method:'POST', body: data,
+      headers:{'Accept':'application/json'}
+    });
+    if(res.ok){
+      showSuccess(formId, successMsg);
+      form.reset();
+    } else {
+      fallbackMailto(form, body);
+    }
+  } catch(e) {
+    fallbackMailto(form, body);
+  }
+  btn.textContent = origText; btn.disabled = false;
+}
+
+function showSuccess(formId, msg) {
+  const form = document.getElementById(formId);
+  const success = form.parentElement.querySelector('.form-success');
+  if(success){ success.style.display='block'; form.style.display='none'; }
+}
+
+function fallbackMailto(form, body) {
+  const subject = encodeURIComponent('Nemitech Solutions Enquiry — '+document.title);
+  const mailbody = encodeURIComponent(body);
+  window.location.href = 'mailto:info@nemitechsolutions.co.ke?subject='+subject+'&body='+mailbody;
+}
+</script>
+
+<!-- ══ MODAL: SEND A MESSAGE ══════════════════════════════════════ -->
+<style>
+.nt-modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,30,48,.75);z-index:9000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);}
+.nt-modal{background:#fff;border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.3);}
+.nt-modal-head{padding:20px 24px 0;display:flex;justify-content:space-between;align-items:flex-start;}
+.nt-modal-close{width:32px;height:32px;background:var(--bg);border:none;border-radius:8px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;color:var(--mid);}
+.nt-modal-close:hover{background:var(--border);}
+.nt-modal-body{padding:16px 24px 24px;}
+.form-success{display:none;text-align:center;padding:20px;}
+</style>
+
+<div id="modal-contact" class="nt-modal-overlay" onclick="if(event.target===this)closeModal('modal-contact')">
+  <div class="nt-modal">
+    <div class="nt-modal-head">
+      <div>
+        <div style="font-size:11px;color:var(--teal);font-weight:700;letter-spacing:1px;margin-bottom:3px">CONTACT US</div>
+        <div style="font-size:18px;font-weight:800;color:var(--navy)">💬 Send a Message</div>
+        <div style="font-size:11px;color:var(--mid);margin-top:2px">General enquiries — we reply within 24 hours</div>
+      </div>
+      <button class="nt-modal-close" onclick="closeModal('modal-contact')">✕</button>
+    </div>
+    <div class="nt-modal-body">
+      <div class="form-success">
+        <div style="font-size:36px;margin-bottom:10px">✅</div>
+        <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:6px">Message Sent!</div>
+        <div style="font-size:12px;color:var(--mid);margin-bottom:16px">Thank you for reaching out. Our team will respond to you within 24 hours.</div>
+        <button class="btn btn-outline btn-sm" onclick="closeModal('modal-contact')">Close</button>
+      </div>
+      <form id="form-contact" action="https://formspree.io/f/info@nemitechsolutions.co.ke" method="POST">
+        <input type="hidden" name="_subject" value="New Contact Enquiry — Nemitech Solutions">
+        <input type="hidden" name="_replyto" id="fc-email-hidden">
+        <div class="field"><label>Full Name *</label><input name="Name" required placeholder="Your full name"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field"><label>Email Address *</label><input name="Email" type="email" required placeholder="you@email.com" oninput="document.getElementById('fc-email-hidden').value=this.value"></div>
+          <div class="field"><label>Phone Number</label><input name="Phone" placeholder="+254 7XX XXX XXX"></div>
+        </div>
+        <div class="field"><label>Subject *</label><input name="Subject" required placeholder="How can we help you?"></div>
+        <div class="field"><label>Message *</label><textarea name="Message" rows="4" required placeholder="Your message to Nemitech Solutions..."></textarea></div>
+        <button type="submit" class="btn btn-teal" style="width:100%;padding:12px" onclick="event.preventDefault();submitForm('form-contact','Message sent successfully!')">Send Message →</button>
+        <div style="font-size:10px;color:var(--lt);text-align:center;margin-top:8px">Sent to info@nemitechsolutions.co.ke · We reply within 24 hours</div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: GET A QUOTE ═════════════════════════════════════════ -->
+<div id="modal-quote" class="nt-modal-overlay" onclick="if(event.target===this)closeModal('modal-quote')">
+  <div class="nt-modal">
+    <div class="nt-modal-head">
+      <div>
+        <div style="font-size:11px;color:var(--amber);font-weight:700;letter-spacing:1px;margin-bottom:3px">QUOTE REQUEST</div>
+        <div style="font-size:18px;font-weight:800;color:var(--navy)">💰 Get a Quote</div>
+        <div style="font-size:11px;color:var(--mid);margin-top:2px">We will send a detailed quote within 24 hours</div>
+      </div>
+      <button class="nt-modal-close" onclick="closeModal('modal-quote')">✕</button>
+    </div>
+    <div class="nt-modal-body">
+      <div class="form-success">
+        <div style="font-size:36px;margin-bottom:10px">✅</div>
+        <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:6px">Quote Request Received!</div>
+        <div style="font-size:12px;color:var(--mid);margin-bottom:16px">We will prepare a detailed quote and send it to your email within 24 hours.</div>
+        <button class="btn btn-sm" style="background:var(--amber);color:#fff;border:none" onclick="closeModal('modal-quote')">Close</button>
+      </div>
+      <form id="form-quote" action="https://formspree.io/f/info@nemitechsolutions.co.ke" method="POST">
+        <input type="hidden" name="_subject" value="Quote Request — Nemitech Solutions">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field"><label>Full Name *</label><input name="Name" required placeholder="Your full name"></div>
+          <div class="field"><label>Organisation / Company *</label><input name="Organisation" required placeholder="Institution or company name"></div>
+          <div class="field"><label>Email Address *</label><input name="Email" type="email" required placeholder="you@organisation.ke"></div>
+          <div class="field"><label>Phone / WhatsApp *</label><input name="Phone" required placeholder="+254 7XX XXX XXX"></div>
+        </div>
+        <div class="field">
+          <label>Service Required *</label>
+          <select name="Service" required>
+            <option value="">Select a service</option>
+            <option>Web Design & Development</option>
+            <option>Member Portal & Management System</option>
+            <option>Mobile App Development (Android & iOS)</option>
+            <option>Digital Agriculture Platform</option>
+            <option>Cloud Hosting & Infrastructure</option>
+            <option>CCTV Installation</option>
+            <option>Network Cabling & Wi-Fi</option>
+            <option>ICT Equipment Supply</option>
+            <option>ICT Consultancy & Data Systems</option>
+            <option>Multiple Services</option>
+            <option>Not sure — need advice</option>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field">
+            <label>Budget Range *</label>
+            <select name="Budget" required>
+              <option value="">Select range</option>
+              <option>Under KES 50,000</option>
+              <option>KES 50,000 – 150,000</option>
+              <option>KES 150,000 – 400,000</option>
+              <option>KES 400,000 – 800,000</option>
+              <option>KES 800,000 – 1,500,000</option>
+              <option>Over KES 1,500,000</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Desired Timeline</label>
+            <select name="Timeline">
+              <option value="">Select timeline</option>
+              <option>ASAP / Urgent</option>
+              <option>Within 1 month</option>
+              <option>1–3 months</option>
+              <option>3–6 months</option>
+              <option>Flexible</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>Brief Project Description *</label><textarea name="Description" rows="3" required placeholder="What do you need? Who will use it? Any key features you have in mind?"></textarea></div>
+        <button type="submit" class="btn" style="width:100%;padding:12px;background:var(--amber);color:#fff;border:none" onclick="event.preventDefault();submitForm('form-quote','Quote request sent!')">Request Quote →</button>
+        <div style="font-size:10px;color:var(--lt);text-align:center;margin-top:8px">Sent to info@nemitechsolutions.co.ke · Detailed quote within 24 hours</div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: START A PROJECT ═════════════════════════════════════ -->
+<div id="modal-project" class="nt-modal-overlay" onclick="if(event.target===this)closeModal('modal-project')">
+  <div class="nt-modal">
+    <div class="nt-modal-head">
+      <div>
+        <div style="font-size:11px;color:var(--mint);font-weight:700;letter-spacing:1px;margin-bottom:3px">PROJECT BRIEF</div>
+        <div style="font-size:18px;font-weight:800;color:var(--navy)">🚀 Start a Project</div>
+        <div style="font-size:11px;color:var(--mid);margin-top:2px">Share your full brief — we will schedule a discovery call within 48 hours</div>
+      </div>
+      <button class="nt-modal-close" onclick="closeModal('modal-project')">✕</button>
+    </div>
+    <div class="nt-modal-body">
+      <div class="form-success">
+        <div style="font-size:36px;margin-bottom:10px">🚀</div>
+        <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:6px">Project Brief Received!</div>
+        <div style="font-size:12px;color:var(--mid);margin-bottom:16px">Excellent! We will review your brief and reach out within 48 hours to schedule a discovery call.</div>
+        <button class="btn btn-teal btn-sm" onclick="closeModal('modal-project')">Close</button>
+      </div>
+      <form id="form-project" action="https://formspree.io/f/info@nemitechsolutions.co.ke" method="POST">
+        <input type="hidden" name="_subject" value="New Project Brief — Nemitech Solutions">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field"><label>Full Name *</label><input name="Name" required placeholder="Your full name"></div>
+          <div class="field"><label>Job Title / Role</label><input name="Role" placeholder="e.g. Executive Director"></div>
+          <div class="field"><label>Organisation *</label><input name="Organisation" required placeholder="Institution or company name"></div>
+          <div class="field"><label>Email Address *</label><input name="Email" type="email" required placeholder="you@organisation.ke"></div>
+          <div class="field"><label>Phone / WhatsApp *</label><input name="Phone" required placeholder="+254 7XX XXX XXX"></div>
+          <div class="field">
+            <label>Preferred Contact Time</label>
+            <select name="ContactTime">
+              <option value="">Any time</option>
+              <option>Morning (8am–12pm)</option>
+              <option>Afternoon (12pm–5pm)</option>
+              <option>Evening (5pm–7pm)</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Type of Platform / System *</label>
+          <select name="PlatformType" required>
+            <option value="">Select type</option>
+            <option>Website (corporate / institutional)</option>
+            <option>Member Portal & Management System</option>
+            <option>Mobile App (Android & iOS)</option>
+            <option>Digital Agriculture Platform</option>
+            <option>CCTV & Physical Infrastructure</option>
+            <option>Cloud Hosting & Infrastructure Setup</option>
+            <option>ICT Consultancy / Data System</option>
+            <option>Multiple / Combined Platform</option>
+          </select>
+        </div>
+        <div class="field"><label>Project Description *</label><textarea name="ProjectDescription" rows="4" required placeholder="Describe what you want built — who it will serve, key features, any existing systems to integrate with, and what success looks like for your organisation."></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field">
+            <label>Estimated Budget *</label>
+            <select name="Budget" required>
+              <option value="">Select range</option>
+              <option>Under KES 100,000</option>
+              <option>KES 100,000 – 350,000</option>
+              <option>KES 350,000 – 700,000</option>
+              <option>KES 700,000 – 1,500,000</option>
+              <option>Over KES 1,500,000</option>
+              <option>To be determined</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Target Go-Live Date</label>
+            <input name="GoLiveDate" type="month" style="padding:9px 12px">
+          </div>
+        </div>
+        <div class="field">
+          <label>How did you hear about Nemitech?</label>
+          <select name="ReferralSource">
+            <option value="">Select</option>
+            <option>Referral from a colleague</option>
+            <option>Google Search</option>
+            <option>LinkedIn</option>
+            <option>WhatsApp</option>
+            <option>Saw our work / portfolio</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-teal" style="width:100%;padding:12px" onclick="event.preventDefault();submitForm('form-project','Project brief submitted!')">Submit Project Brief →</button>
+        <div style="font-size:10px;color:var(--lt);text-align:center;margin-top:8px">Sent to info@nemitechsolutions.co.ke · Discovery call scheduled within 48 hours</div>
+      </form>
+    </div>
+  </div>
+</div>
+</body>
+</html>
