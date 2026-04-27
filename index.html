@@ -199,7 +199,15 @@ button{border:none;background:none;}
 .cart-overlay.open{display:block;}
 .cart-badge{background:var(--red);color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;position:absolute;top:-5px;right:-5px;}
 .shop-cat-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+
+.admin-form{background:#fff;border:1px solid var(--border);border-radius:14px;padding:24px;}
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.admin-row{background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;}
+.admin-thumb-sm{width:48px;height:48px;background:var(--bg);border-radius:8px;object-fit:contain;flex-shrink:0;border:1px solid var(--border);}
+
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -256,6 +264,7 @@ button{border:none;background:none;}
     <div class="sn-link" data-page="portfolio" onclick="showPage('portfolio',this)">Portfolio</div>
     <div class="sn-link" data-page="team" onclick="showPage('team',this)">Our Team</div>
     <div class="sn-link" data-page="shop" onclick="showPage('shop',this)">🛒 Shop</div>
+    <div class="sn-link" data-page="manage-shop" onclick="showPage('manage-shop',this)" style="font-size:10px;color:rgba(255,255,255,.4)">⚙️</div>
     <div class="sn-link" data-page="contact" onclick="showPage('contact',this)">Contact Us</div>
   </div>
   <div class="sn-btns">
@@ -1655,7 +1664,7 @@ button{border:none;background:none;}
       </div>
 
       <div class="port-card" data-cat="Agriculture" onclick="window.open('https://nationalcassava.vetclinic-mrd.com','_blank')">
-        <div class="port-logo-thumb"><img src="https://cassava.vetclinic-mrd.com/wp-content/uploads/2023/08/expo-logo-1.jpeg" alt="National Cassava Logo" onerror="var p=this.parentElement;p.innerHTML='<span style=\'font-size:52px\'>🌱</span>'"></div>
+        <div class="port-logo-thumb"><img src="https://cassava.vetclinic-mrd.com/wp-content/uploads/2023/08/expo-logo-1.jpeg" alt="National Cassava Logo" onerror="this.remove()"></div>
         <div class="port-body">
           <div class="port-title">National Cassava Programme</div>
           <div class="port-client">National Cassava Development Programme</div>
@@ -1678,7 +1687,7 @@ button{border:none;background:none;}
       </div>
 
       <div class="port-card" data-cat="Private" onclick="window.open('https://tehilarealtors.vetclinic-mrd.com','_blank')">
-        <div class="port-logo-thumb"><img src="https://tehilarealtors.vetclinic-mrd.com/wp-content/uploads/2022/05/logo.png" alt="Tehila Realtors Logo" onerror="var p=this.parentElement;p.innerHTML='<span style=\'font-size:52px\'>🏠</span>'"></div>
+        <div class="port-logo-thumb"><img src="https://tehilarealtors.vetclinic-mrd.com/wp-content/uploads/2022/05/logo.png" alt="Tehila Realtors Logo" onerror="this.remove()"></div>
         <div class="port-body">
           <div class="port-title">Tehila Realtors Platform</div>
           <div class="port-client">Tehillah Realtors Limited</div>
@@ -2021,53 +2030,181 @@ document.addEventListener('keydown', e => {
 });
 
 // ── FORM SUBMISSION via Formspree ─────────────────────────────────
-async function submitForm(formId, successMsg) {
-  const form = document.getElementById(formId);
+// ── COMMUNICATIONS LOG ────────────────────────────────────────────
+var COMMS_KEY = 'nemitech_comms_log';
+function commsLog() {
+  try { return JSON.parse(localStorage.getItem(COMMS_KEY) || '[]'); } catch(e){ return []; }
+}
+function commsSave(log) {
+  try { localStorage.setItem(COMMS_KEY, JSON.stringify(log)); } catch(e){}
+}
+function commsAdd(type, data) {
+  var log = commsLog();
+  var entry = { id: Date.now(), type: type, date: new Date().toISOString(), data: data };
+  log.unshift(entry);
+  commsSave(log);
+  renderCommsTable();
+  return entry;
+}
+
+// ── FORM SUBMISSION ────────────────────────────────────────────────
+async function submitForm(formId, formType) {
+  var form = document.getElementById(formId);
   if(!form) return;
-  const inputs = form.querySelectorAll('[required]');
-  let valid = true;
-  inputs.forEach(inp => {
-    if(!inp.value.trim()){ inp.style.borderColor = 'var(--red)'; valid = false; }
-    else inp.style.borderColor = '';
+
+  // Validate
+  var inputs = form.querySelectorAll('[required]');
+  var valid = true;
+  inputs.forEach(function(inp) {
+    if(!inp.value.trim()){ inp.style.borderColor = 'var(--red)'; inp.style.background = 'var(--redLt)'; valid = false; }
+    else { inp.style.borderColor = ''; inp.style.background = ''; }
   });
-  if(!valid){ alert('Please fill in all required fields before submitting.'); return; }
-
-  const btn = form.querySelector('button[type="submit"]');
-  const origText = btn ? btn.textContent : '';
-  if(btn){ btn.textContent = 'Sending...'; btn.disabled = true; }
-
-  const data = new FormData(form);
-  let body = '';
-  for(let [k,v] of data.entries()) body += k + ': ' + v + '\n';
-
-  try {
-    const res = await fetch(form.action, {
-      method: 'POST', body: data,
-      headers: { 'Accept': 'application/json' }
-    });
-    if(res.ok){
-      showSuccess(formId, successMsg);
-      form.reset();
-    } else {
-      fallbackMailto(form, body);
-    }
-  } catch(err) {
-    fallbackMailto(form, body);
+  if(!valid){
+    showFormMsg(formId, 'error', 'Please fill in all required fields highlighted in red.');
+    return;
   }
-  if(btn){ btn.textContent = origText; btn.disabled = false; }
+
+  var btn = form.querySelector('button[type="submit"]');
+  var origHTML = btn ? btn.innerHTML : '';
+  if(btn){ btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Sending...</span>'; btn.disabled = true; }
+
+  // Collect data
+  var formData = new FormData(form);
+  var dataObj = {};
+  formData.forEach(function(v,k){ if(k && !k.startsWith('_')) dataObj[k] = v; });
+
+  var success = false;
+  try {
+    var res = await fetch(form.action, { method:'POST', body:formData, headers:{'Accept':'application/json'} });
+    success = res.ok;
+  } catch(e) { success = false; }
+
+  if(btn){ btn.innerHTML = origHTML; btn.disabled = false; }
+
+  if(success) {
+    var entry = commsAdd(formType, dataObj);
+    generatePDF(entry, formType, dataObj);
+    showFormMsg(formId, 'success', 'Message sent! A PDF receipt has been downloaded. We will respond within 24 hours.');
+    form.reset();
+    setTimeout(function(){ closeModal(form.closest('.nt-modal-overlay').id); }, 4000);
+  } else {
+    // Fallback: save locally + open mailto + generate PDF
+    var entry = commsAdd(formType, dataObj);
+    generatePDF(entry, formType, dataObj);
+    showFormMsg(formId, 'warning', 'Could not reach server. Your submission has been saved and a PDF downloaded. Please also send via email.');
+    var body = Object.entries(dataObj).map(function(kv){ return kv[0]+': '+kv[1]; }).join('\n');
+    var subj = encodeURIComponent('Nemitech Solutions — '+formType);
+    setTimeout(function(){
+      window.open('mailto:info@nemitechsolutions.co.ke?subject='+subj+'&body='+encodeURIComponent(body));
+    }, 1500);
+  }
 }
 
-function showSuccess(formId, msg) {
-  const form = document.getElementById(formId);
+function showFormMsg(formId, type, msg) {
+  var form = document.getElementById(formId);
   if(!form) return;
-  const success = form.parentElement ? form.parentElement.querySelector('.form-success') : null;
-  if(success){ success.style.display = 'block'; form.style.display = 'none'; }
+  var existing = form.parentElement.querySelector('.form-inline-msg');
+  if(existing) existing.remove();
+  var colors = { success:'var(--greenLt);border-color:var(--green)', error:'var(--redLt);border-color:var(--red)', warning:'var(--amberLt);border-color:var(--amber)' };
+  var icons = { success:'✅', error:'❌', warning:'⚠️' };
+  var div = document.createElement('div');
+  div.className = 'form-inline-msg';
+  div.style.cssText = 'padding:12px 14px;border-radius:9px;font-size:12px;margin-top:12px;display:flex;align-items:center;gap:10px;background:'+colors[type]+';border:1.5px solid';
+  div.innerHTML = '<span style="font-size:18px">'+icons[type]+'</span><span>'+msg+'</span>';
+  form.parentElement.appendChild(div);
+  if(type === 'success') {
+    var s = form.parentElement.querySelector('.form-success');
+    if(s){ s.style.display = 'block'; form.style.display = 'none'; }
+  }
 }
 
-function fallbackMailto(form, body) {
-  const subject = encodeURIComponent('Nemitech Solutions Enquiry — ' + document.title);
-  const mailbody = encodeURIComponent(body);
-  window.location.href = 'mailto:info@nemitechsolutions.co.ke?subject=' + subject + '&body=' + mailbody;
+// ── PDF RECEIPT GENERATOR ─────────────────────────────────────────
+function generatePDF(entry, formType, data) {
+  try {
+    var jsPDF = (window.jspdf && window.jspdf.jsPDF) || (window.jsPDF);
+    if(!jsPDF){ console.warn('jsPDF not loaded'); return; }
+    var doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+    var W = 210, margin = 20, y = 0;
+
+    // Header background
+    doc.setFillColor(26, 43, 74);
+    doc.rect(0, 0, W, 45, 'F');
+
+    // Logo placeholder + company name
+    doc.setFillColor(2, 128, 144);
+    doc.roundedRect(margin, 10, 20, 20, 3, 3, 'F');
+    doc.setFontSize(12); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold');
+    doc.text('NT', margin+6, 23);
+    doc.setFontSize(16); doc.text('Nemitech Solutions', margin+26, 18);
+    doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(2,195,154);
+    doc.text('DIGITAL SYSTEMS & ICT CONSULTANCY', margin+26, 25);
+    doc.setTextColor(150,180,190);
+    doc.text('info@nemitechsolutions.co.ke  |  +254 710 652544  |  Nairobi, Kenya', margin+26, 31);
+    doc.text('www.nemitech.co.ke', margin+26, 37);
+
+    y = 55;
+
+    // Title bar
+    doc.setFillColor(2, 195, 154);
+    doc.rect(margin, y, W - margin*2, 10, 'F');
+    doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.setTextColor(26, 43, 74);
+    var titles = {'Contact Enquiry':'CONTACT ENQUIRY','Quote Request':'QUOTE REQUEST','Project Brief':'PROJECT BRIEF'};
+    doc.text((titles[formType]||formType.toUpperCase()) + ' CONFIRMATION', margin+4, y+7);
+
+    // Ref + Date
+    y += 16;
+    doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(100,100,100);
+    doc.text('Reference: NTS-' + String(entry.id).slice(-6), margin, y);
+    doc.text('Date: ' + new Date().toLocaleDateString('en-KE',{year:'numeric',month:'long',day:'numeric'}), W-margin, y, {align:'right'});
+
+    y += 10;
+    // Divider
+    doc.setDrawColor(226, 235, 240); doc.setLineWidth(0.5); doc.line(margin, y, W-margin, y);
+    y += 8;
+
+    // Submission details
+    doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(26,43,74);
+    doc.text('Submission Details', margin, y);
+    y += 7;
+    doc.setDrawColor(2,128,144); doc.setLineWidth(1); doc.line(margin, y, margin+50, y);
+    y += 8;
+
+    var entries = Object.entries(data);
+    entries.forEach(function(kv) {
+      if(y > 260){ doc.addPage(); y = 20; }
+      doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(80,100,110);
+      doc.text(kv[0].toUpperCase(), margin, y);
+      doc.setFont('helvetica','normal'); doc.setTextColor(26,43,74);
+      var lines = doc.splitTextToSize(String(kv[1]), W - margin*2 - 50);
+      doc.text(lines, margin+55, y);
+      y += Math.max(6, lines.length * 5);
+    });
+
+    y += 6;
+    doc.setDrawColor(226,235,240); doc.setLineWidth(0.3); doc.line(margin, y, W-margin, y);
+    y += 10;
+
+    // What happens next
+    doc.setFillColor(240, 248, 250);
+    doc.rect(margin, y, W-margin*2, 32, 'F');
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(26,43,74);
+    doc.text('What happens next?', margin+4, y+8);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(74,98,116);
+    var nextSteps = {'Contact Enquiry':'Our team will review your message and respond to your email within 24 hours.','Quote Request':'We will prepare a detailed quote and send it to your email within 24 hours.','Project Brief':'We will review your brief and contact you within 48 hours to schedule a discovery call.'};
+    doc.text(nextSteps[formType]||'We will be in touch shortly.', margin+4, y+16);
+    doc.text('For urgent matters, call or WhatsApp: +254 710 652544', margin+4, y+24);
+    y += 40;
+
+    // Footer
+    doc.setFillColor(15, 30, 48);
+    doc.rect(0, 277, W, 20, 'F');
+    doc.setFontSize(8); doc.setTextColor(100,140,150);
+    doc.text('© 2025 Nemitech Solutions · Building institutions for a digital Kenya', W/2, 287, {align:'center'});
+    doc.text('This is a system-generated document confirming receipt of your submission.', W/2, 292, {align:'center'});
+
+    var filename = (formType||'enquiry').replace(/\s+/g,'-').toLowerCase() + '-NTS-' + String(entry.id).slice(-6) + '.pdf';
+    doc.save(filename);
+  } catch(err) { console.warn('PDF generation failed:', err); }
 }
 
 // ── SHOP ──────────────────────────────────────────────────────────
@@ -2203,6 +2340,315 @@ function enquireProduct(name) {
   window.location.href = 'mailto:info@nemitechsolutions.co.ke?subject=' + subject + '&body=' + body;
 }
 
+
+// ══ SHOP ADMIN ══════════════════════════════════════════════
+var CKEY = 'nemitech_products_v2';
+var customProds = [];
+
+function adminLoadProds() {
+  try { customProds = JSON.parse(localStorage.getItem(CKEY) || '[]'); } catch(e){ customProds=[]; }
+}
+function adminSaveProds() {
+  try { localStorage.setItem(CKEY, JSON.stringify(customProds)); } catch(e){}
+}
+function adminPreviewImg(url) {
+  var p = document.getElementById('ap-preview');
+  if(!p) return;
+  if(url && url.indexOf('http') === 0){ p.src = url; p.style.display = 'block'; }
+  else { p.style.display = 'none'; }
+}
+function adminClearForm() {
+  ['ap-name','ap-cat','ap-price','ap-badge','ap-spec','ap-img','ap-url','ap-specs'].forEach(function(id){
+    var el = document.getElementById(id); if(el) el.value = '';
+  });
+  var p = document.getElementById('ap-preview'); if(p) p.style.display='none';
+}
+function adminAddProduct() {
+  var name  = document.getElementById('ap-name').value.trim();
+  var cat   = document.getElementById('ap-cat').value;
+  var priceRaw = document.getElementById('ap-price').value;
+  var price = parseInt(priceRaw);
+  var badge = document.getElementById('ap-badge').value.trim() || 'IN STOCK';
+  var spec  = document.getElementById('ap-spec').value.trim();
+  var img   = document.getElementById('ap-img').value.trim();
+  var url   = document.getElementById('ap-url').value.trim();
+  var specsRaw = document.getElementById('ap-specs').value.trim();
+  var msg   = document.getElementById('ap-msg');
+
+  if(!name || !cat || !price || !spec) {
+    msg.textContent = 'Please fill in Name, Category, Price, and Specification.';
+    msg.style.color = 'var(--red)'; msg.style.display = 'block'; return;
+  }
+  var specsArr = specsRaw.split('\n').filter(Boolean).map(function(line){
+    var parts = line.split(':'); return [parts[0].trim(), parts.slice(1).join(':').trim()];
+  });
+  var prod = {id:'c'+Date.now(), name:name, cat:cat, price:price, badge:badge, spec:spec, img:img, url:url, specsArr:specsArr};
+  adminLoadProds(); customProds.push(prod); adminSaveProds();
+  adminRenderCard(prod); adminRenderList();
+  msg.textContent = 'Product "' + name + '" added to shop!';
+  msg.style.color = 'var(--green)'; msg.style.display = 'block';
+  adminClearForm();
+  setTimeout(function(){ msg.style.display='none'; }, 4000);
+}
+var GRADS = {
+  Laptops:'135deg,#1A2B4A,#028090', Printers:'135deg,#1A4A2A,#028090',
+  Networking:'135deg,#1A2B6A,#2563EB', CCTV:'135deg,#2A1A4A,#5A2A8A',
+  Storage:'135deg,#1A3A1A,#2E7D32', Accessories:'135deg,#4A2A1A,#C2410C',
+  Phones:'135deg,#1A1A4A,#4F46E5', Office:'135deg,#4A1A1A,#B91C1C'
+};
+var ICONS = {Laptops:'💻',Printers:'🖨️',Networking:'🔌',CCTV:'📷',Storage:'💾',Accessories:'🖥️',Phones:'📱',Office:'🏢'};
+function adminRenderCard(p) {
+  var grid = document.getElementById('shopGrid'); if(!grid) return;
+  var grad = 'linear-gradient(' + (GRADS[p.cat] || '135deg,#1A2B4A,#028090') + ')';
+  var icon = ICONS[p.cat] || '📦';
+  var card = document.createElement('div');
+  card.className = 'product-card'; card.dataset.cat = p.cat; card.dataset.name = p.name; card.id = 'card-' + p.id;
+  var thumbInner = p.img
+    ? '<img src="' + p.img + '" alt="' + p.name + '" style="width:100%;height:160px;object-fit:contain;padding:10px;display:block" onerror="this.remove()">'
+    : '<div style="width:100%;height:160px;background:' + grad + ';display:flex;align-items:center;justify-content:center;font-size:48px">' + icon + '</div>';
+  card.innerHTML =
+    '<div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">' +
+    thumbInner +
+    '<div class="product-badge" style="background:var(--mintLt);color:var(--teal)">' + p.badge + '</div></div>' +
+    '<div class="product-body">' +
+    '<div class="product-name">' + p.name + '</div>' +
+    '<div class="product-spec">' + p.spec + '</div>' +
+    '<div class="product-price">KES ' + p.price.toLocaleString() + '</div>' +
+    '<div class="product-actions">' +
+    '<button class="cart-btn" style="background:var(--teal);color:#fff" onclick="event.stopPropagation();addToCart(this,\'' + p.name.replace(/'/g,"\\'") + '\',' + p.price + ',\'' + icon + '\')">🛒 Add to Cart</button>' +
+    (p.url ? '<button class="enquire-btn" onclick="event.stopPropagation();window.open(\'' + p.url + '\',\'_blank\')" title="View">↗</button>' :
+             '<button class="enquire-btn" onclick="event.stopPropagation();enquireProduct(\'' + p.name.replace(/'/g,"\\'") + '\')">📧</button>') +
+    '</div></div>';
+  card.onclick = function(){ adminShowProductDetail(p); };
+  grid.appendChild(card);
+}
+function adminShowProductDetail(p) {
+  var icon = ICONS[p.cat] || '📦';
+  var grad = 'linear-gradient(' + (GRADS[p.cat] || '135deg,#1A2B4A,#028090') + ')';
+  var specsHtml = (p.specsArr || []).map(function(kv){
+    return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">' +
+      '<span style="font-size:12px;color:var(--lt);width:140px">' + kv[0] + '</span>' +
+      '<span style="font-size:12px;color:var(--text);font-weight:600;text-align:right">' + kv[1] + '</span></div>';
+  }).join('');
+  var ov = document.getElementById('cust-overlay'); if(ov) ov.remove();
+  var overlay = document.createElement('div');
+  overlay.id = 'cust-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,30,48,.8);z-index:9500;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)';
+  var imgBlock = p.img
+    ? '<img src="' + p.img + '" style="max-width:100%;max-height:240px;object-fit:contain;padding:16px" onerror="this.remove()">'
+    : '<div style="font-size:70px;text-align:center;padding:40px">' + icon + '</div>';
+  overlay.innerHTML =
+    '<div style="background:#fff;border-radius:16px;width:100%;max-width:820px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.3)">' +
+    '<div style="background:var(--navy);padding:16px 24px;border-radius:16px 16px 0 0;display:flex;justify-content:space-between;align-items:center">' +
+    '<div style="font-size:11px;color:var(--mint)">' + p.cat + ' / ' + p.name + '</div>' +
+    '<button onclick="document.getElementById(\'cust-overlay\').remove();document.body.style.overflow=\'\'" style="background:rgba(255,255,255,.1);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:18px;color:#fff">✕</button></div>' +
+    '<div style="padding:28px;display:grid;grid-template-columns:1fr 1fr;gap:28px">' +
+    '<div style="background:var(--bg);border-radius:12px;display:flex;align-items:center;justify-content:center;min-height:240px;overflow:hidden">' + imgBlock + '</div>' +
+    '<div>' +
+    '<div style="font-size:11px;color:var(--teal);font-weight:700;letter-spacing:1px;margin-bottom:6px">' + p.cat.toUpperCase() + '</div>' +
+    '<div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:10px;line-height:1.2">' + p.name + '</div>' +
+    '<div style="font-size:13px;color:var(--mid);margin-bottom:16px">' + p.spec + '</div>' +
+    '<div style="font-size:28px;font-weight:800;color:var(--teal);margin-bottom:18px">KES ' + p.price.toLocaleString() + '</div>' +
+    '<div style="display:flex;gap:10px;margin-bottom:12px">' +
+    '<button class="btn btn-teal" style="flex:1" onclick="addToCart(this,\'' + p.name.replace(/'/g,"\\'") + '\',' + p.price + ',\'' + icon + '\');openCart()">🛒 Add to Cart</button>' +
+    '<button class="btn btn-outline" style="flex:1" onclick="enquireProduct(\'' + p.name.replace(/'/g,"\\'") + '\')">📧 Enquire</button></div>' +
+    (p.url ? '<a href="' + p.url + '" target="_blank" style="display:flex;align-items:center;gap:6px;padding:9px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;text-decoration:none;color:var(--mid);font-size:11px">↗ View on supplier site</a>' : '') +
+    '</div></div>' +
+    (specsHtml ? '<div style="padding:0 28px 28px"><div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--teal)">Specifications</div><div style="background:var(--bg);border-radius:10px;padding:0 16px">' + specsHtml + '</div></div>' : '') +
+    '</div>';
+  overlay.onclick = function(e){ if(e.target===overlay){overlay.remove();document.body.style.overflow='';} };
+  document.body.appendChild(overlay);
+  document.body.style.overflow='hidden';
+}
+function adminRenderList() {
+  adminLoadProds();
+  var el = document.getElementById('custom-count'); if(el) el.textContent = customProds.length;
+  var list = document.getElementById('admin-product-list'); if(!list) return;
+  list.innerHTML = '';
+  if(customProds.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--lt)"><div style="font-size:36px;margin-bottom:10px">📦</div><div>No products added yet</div></div>';
+    return;
+  }
+  customProds.forEach(function(p, idx){
+    var row = document.createElement('div'); row.className = 'admin-row';
+    row.innerHTML =
+      (p.img ? '<img src="' + p.img + '" class="admin-thumb-sm" onerror="this.style.opacity=0">' :
+               '<div class="admin-thumb-sm" style="display:flex;align-items:center;justify-content:center;font-size:22px">' + (ICONS[p.cat]||'📦') + '</div>') +
+      '<div style="flex:1">' +
+      '<div style="font-size:13px;font-weight:700;color:var(--navy)">' + p.name + '</div>' +
+      '<div style="font-size:11px;color:var(--lt)">' + p.cat + ' · KES ' + p.price.toLocaleString() + ' · ' + p.badge + '</div></div>' +
+      '<button class="btn btn-sm" style="background:var(--redLt);color:var(--red);border:1px solid var(--red);flex-shrink:0" onclick="adminDeleteProd(' + idx + ')">🗑️</button>';
+    list.appendChild(row);
+  });
+}
+function adminDeleteProd(idx) {
+  adminLoadProds();
+  var p = customProds[idx]; if(!p) return;
+  if(!confirm('Delete "' + p.name + '"?')) return;
+  var card = document.getElementById('card-' + p.id); if(card) card.remove();
+  customProds.splice(idx, 1); adminSaveProds(); adminRenderList();
+}
+function adminClearAll() {
+  if(!confirm('Delete all your custom products?')) return;
+  adminLoadProds();
+  customProds.forEach(function(p){ var c=document.getElementById('card-'+p.id); if(c) c.remove(); });
+  customProds=[]; adminSaveProds(); adminRenderList();
+}
+function adminExport() {
+  adminLoadProds();
+  var blob = new Blob([JSON.stringify(customProds,null,2)],{type:'application/json'});
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'nemitech-products.json'; a.click();
+}
+function adminFilter(q) {
+  var rows = document.querySelectorAll('#admin-product-list .admin-row');
+  adminLoadProds();
+  rows.forEach(function(row, i){
+    var p = customProds[i]; if(!p) return;
+    row.style.display = (!q || p.name.toLowerCase().indexOf(q.toLowerCase()) >= 0) ? 'flex' : 'none';
+  });
+}
+
+// ── SHOP PAGINATION ───────────────────────────────────────────────
+var SHOP_PER_PAGE = 20;
+var shopCurrentPage = 1;
+
+function shopRenderPage(page) {
+  shopCurrentPage = page;
+  var all = Array.from(document.querySelectorAll('#shopGrid .product-card'));
+  var visible = all.filter(function(c){ return c.dataset.filtered !== 'hide'; });
+  var total = visible.length;
+  var totalPages = Math.ceil(total / SHOP_PER_PAGE) || 1;
+  page = Math.min(Math.max(page, 1), totalPages);
+  shopCurrentPage = page;
+  var start = (page-1) * SHOP_PER_PAGE;
+  all.forEach(function(c){ c.style.display='none'; });
+  visible.forEach(function(c,i){ c.style.display=(i>=start && i<start+SHOP_PER_PAGE)?'block':'none'; });
+  var pgDiv=document.getElementById('shopPagination');
+  var infoDiv=document.getElementById('shopPgInfo');
+  if(!pgDiv) return;
+  pgDiv.innerHTML='';
+  if(totalPages<=1){ if(infoDiv)infoDiv.textContent=''; return; }
+  function mkBtn(label, pg, active, disabled) {
+    var b=document.createElement('button'); b.className='pg-btn'+(active?' active':''); b.textContent=label; b.disabled=disabled;
+    if(!disabled) b.onclick=function(){ shopRenderPage(pg); };
+    return b;
+  }
+  pgDiv.appendChild(mkBtn('←',page-1,false,page<=1));
+  for(var p=1;p<=totalPages;p++)(function(pg){ pgDiv.appendChild(mkBtn(pg,pg,pg===page,false)); })(p);
+  pgDiv.appendChild(mkBtn('→',page+1,false,page>=totalPages));
+  if(infoDiv) infoDiv.textContent='Showing '+(start+1)+'–'+Math.min(start+SHOP_PER_PAGE,total)+' of '+total+' products';
+}
+
+function filterShop(pillEl, cat) {
+  document.querySelectorAll('#shopCatBar .filter-pill').forEach(function(p){p.classList.remove('active');});
+  pillEl.classList.add('active');
+  var si=document.getElementById('shop-search'); if(si) si.value='';
+  document.querySelectorAll('#shopGrid .product-card').forEach(function(c){
+    c.dataset.filtered=(cat==='All'||c.dataset.cat===cat)?'show':'hide';
+  });
+  shopRenderPage(1);
+}
+
+function searchShop(q) {
+  var lq=q.toLowerCase();
+  document.querySelectorAll('#shopGrid .product-card').forEach(function(c){
+    c.dataset.filtered=(!q||c.dataset.name.toLowerCase().indexOf(lq)>=0)?'show':'hide';
+  });
+  shopRenderPage(1);
+}
+
+// ── COMMUNICATIONS TABLE ──────────────────────────────────────────
+function renderCommsTable() {
+  var tbody=document.getElementById('comms-tbody'); if(!tbody) return;
+  var log=commsLog();
+  var el=document.getElementById('comms-count'); if(el) el.textContent=log.length;
+  tbody.innerHTML='';
+  if(log.length===0){
+    tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--lt)">No form submissions yet — they will appear here automatically</td></tr>';
+    return;
+  }
+  log.forEach(function(entry,idx){
+    var name=entry.data.Name||entry.data.name||'—';
+    var email=entry.data.Email||entry.data.email||'—';
+    var phone=entry.data.Phone||entry.data.phone||'—';
+    var date=new Date(entry.date).toLocaleString('en-KE',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td style="padding:10px 14px;font-size:11px;color:var(--lt)">'+date+'</td>'+
+      '<td style="padding:10px 14px"><span style="background:var(--mintLt);color:var(--teal);padding:2px 9px;border-radius:10px;font-size:10px;font-weight:700">'+entry.type+'</span></td>'+
+      '<td style="padding:10px 14px;font-size:12px;font-weight:600;color:var(--navy)">'+name+'</td>'+
+      '<td style="padding:10px 14px;font-size:11px;color:var(--mid)">'+email+'<br><span style="color:var(--lt)">'+phone+'</span></td>'+
+      '<td style="padding:10px 14px;display:flex;gap:5px">'+
+        '<button class="btn btn-sm" style="background:var(--teal);color:#fff;border:none" onclick="commsView('+idx+')">View</button>'+
+        '<button class="btn btn-sm" style="background:var(--greenLt);color:var(--green);border:1px solid var(--green)" onclick="commsRePDF('+idx+')">PDF</button>'+
+        '<button class="btn btn-sm" style="background:var(--redLt);color:var(--red);border:1px solid var(--red)" onclick="commsDel('+idx+')">✗</button>'+
+      '</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function commsView(idx){
+  var entry=commsLog()[idx]; if(!entry) return;
+  var rows=Object.entries(entry.data).map(function(kv){
+    return '<tr><td style="padding:8px 12px;font-size:11px;color:var(--lt);width:140px;font-weight:600">'+kv[0]+'</td><td style="padding:8px 12px;font-size:11px;color:var(--navy)">'+kv[1]+'</td></tr>';
+  }).join('');
+  var ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(15,30,48,.8);z-index:9500;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)';
+  ov.innerHTML='<div style="background:#fff;border-radius:14px;width:100%;max-width:560px;max-height:80vh;overflow-y:auto">'+
+    '<div style="background:var(--navy);padding:16px 20px;border-radius:14px 14px 0 0;display:flex;justify-content:space-between;align-items:center">'+
+    '<div><div style="font-size:14px;font-weight:700;color:#fff">'+entry.type+'</div>'+
+    '<div style="font-size:10px;color:var(--mint)">'+new Date(entry.date).toLocaleString()+' · Ref NTS-'+String(entry.id).slice(-6)+'</div></div>'+
+    '<button onclick="this.closest(\'[style]\').remove();document.body.style.overflow=\'\'" style="background:rgba(255,255,255,.1);border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;color:#fff;font-size:16px">✕</button></div>'+
+    '<table style="width:100%;border-collapse:collapse">'+rows+'</table>'+
+    '<div style="padding:14px 20px"><button class="btn btn-teal btn-sm" onclick="commsRePDF('+idx+');this.closest(\'[style]\').remove();document.body.style.overflow=\'\'">⬇ Re-download PDF</button></div></div>';
+  ov.onclick=function(e){if(e.target===ov){ov.remove();document.body.style.overflow='';}};
+  document.body.appendChild(ov); document.body.style.overflow='hidden';
+}
+
+function commsRePDF(idx){
+  var e=commsLog()[idx]; if(!e) return;
+  generatePDF(e, e.type, e.data);
+}
+
+function commsDel(idx){
+  var log=commsLog();
+  if(!confirm('Delete this record?')) return;
+  log.splice(idx,1); commsSave(log); renderCommsTable();
+}
+
+function commsExportExcel(){
+  var log=commsLog();
+  if(log.length===0){alert('No submissions to export.');return;}
+  if(typeof XLSX==='undefined'){alert('Excel library not loaded. Check internet connection.');return;}
+  var rows=log.map(function(e){
+    var r={Date:new Date(e.date).toLocaleString(),Type:e.type,Reference:'NTS-'+String(e.id).slice(-6)};
+    Object.assign(r,e.data); return r;
+  });
+  var ws=XLSX.utils.json_to_sheet(rows);
+  var wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Communications');
+  XLSX.writeFile(wb,'Nemitech-Communications-'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
+function commsClearAll(){
+  if(!confirm('Clear all communication records? This cannot be undone.')) return;
+  commsSave([]); renderCommsTable();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+(function(){
+  adminLoadProds();
+  customProds.forEach(function(p){ adminRenderCard(p); });
+  adminRenderList();
+  renderCommsTable();
+  // Init shop pagination after all cards load
+  setTimeout(function(){
+    document.querySelectorAll('#shopGrid .product-card').forEach(function(c){
+      if(!c.dataset.filtered) c.dataset.filtered='show';
+    });
+    shopRenderPage(1);
+  }, 100);
+})();
+
 </script>
 
 <!-- ══ MODAL: SEND A MESSAGE ══════════════════════════════════════ -->
@@ -2243,7 +2689,7 @@ function enquireProduct(name) {
         </div>
         <div class="field"><label>Subject *</label><input name="Subject" required placeholder="How can we help you?"></div>
         <div class="field"><label>Message *</label><textarea name="Message" rows="4" required placeholder="Your message to Nemitech Solutions..."></textarea></div>
-        <button type="submit" class="btn btn-teal" style="width:100%;padding:12px" onclick="event.preventDefault();submitForm('form-contact','Message sent successfully!')">Send Message →</button>
+        <button type="submit" class="btn btn-teal" style="width:100%;padding:12px" onclick="event.preventDefault();submitForm('form-contact','Contact Enquiry')">Send Message →</button>
         <div style="font-size:10px;color:var(--lt);text-align:center;margin-top:8px">Sent to info@nemitechsolutions.co.ke · We reply within 24 hours</div>
       </form>
     </div>
@@ -2319,7 +2765,7 @@ function enquireProduct(name) {
           </div>
         </div>
         <div class="field"><label>Brief Project Description *</label><textarea name="Description" rows="3" required placeholder="What do you need? Who will use it? Any key features you have in mind?"></textarea></div>
-        <button type="submit" class="btn" style="width:100%;padding:12px;background:var(--amber);color:#fff;border:none" onclick="event.preventDefault();submitForm('form-quote','Quote request sent!')">Request Quote →</button>
+        <button type="submit" class="btn" style="width:100%;padding:12px;background:var(--amber);color:#fff;border:none" onclick="event.preventDefault();submitForm('form-quote','Quote Request')">Request Quote →</button>
         <div style="font-size:10px;color:var(--lt);text-align:center;margin-top:8px">Sent to info@nemitechsolutions.co.ke · Detailed quote within 24 hours</div>
       </form>
     </div>
@@ -2407,7 +2853,7 @@ function enquireProduct(name) {
             <option>Other</option>
           </select>
         </div>
-        <button type="submit" class="btn btn-teal" style="width:100%;padding:12px" onclick="event.preventDefault();submitForm('form-project','Project brief submitted!')">Submit Project Brief →</button>
+        <button type="submit" class="btn btn-teal" style="width:100%;padding:12px" onclick="event.preventDefault();submitForm('form-project','Project Brief')">Submit Project Brief →</button>
         <div style="font-size:10px;color:var(--lt);text-align:center;margin-top:8px">Sent to info@nemitechsolutions.co.ke · Discovery call scheduled within 48 hours</div>
       </form>
     </div>
@@ -2459,9 +2905,8 @@ function enquireProduct(name) {
 
   
       <div class="product-card" data-cat="Laptops" data-name="HP 15s Core i5 Notebook" onclick="openProductPage('hp-15s-i5')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://ssl-product-images.www8-hp.com/digmedialib/prodimg/knac/c08136707.png" alt="HP 15s Core i5 Notebook" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">💻</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFBMkI0QSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMwMjgwOTAiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5K7PC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPkhQPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTU4IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgb3BhY2l0eT0iMC42Ij4xNXMgQ29yZSBpNTwvdGV4dD4KPC9zdmc+" alt="HP 15s Core i5 Notebook" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">NEW</div>
         </div>
         <div class="product-body">
@@ -2475,9 +2920,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Laptops" data-name="HP 15s Core i3 College Laptop" onclick="openProductPage('hp-15s-i3')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://ssl-product-images.www8-hp.com/digmedialib/prodimg/knac/c08136707.png" alt="HP 15s Core i3 College Laptop" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">💻</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFBMkI0QSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMwMjgwOTAiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5K7PC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPkhQPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTU4IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgb3BhY2l0eT0iMC42Ij4xNXMgQ29yZSBpMzwvdGV4dD4KPC9zdmc+" alt="HP 15s Core i3 College Laptop" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--amberLt);color:var(--amber)">BUDGET</div>
         </div>
         <div class="product-body">
@@ -2491,9 +2935,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Laptops" data-name="Lenovo IdeaPad 3 Core i5" onclick="openProductPage('lenovo-ideapad3-i5')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://p3-ofp.static.pub/ShareResource/na/categoryPics/laptops-IdeaPad-category-hero.png" alt="Lenovo IdeaPad 3 Core i5" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">💻</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFBMkI0QSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMwMjgwOTAiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5K7PC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPkxlbm92bzwvdGV4dD4KICA8dGV4dCB4PSIxNTAiIHk9IjE1OCIgZm9udC1mYW1pbHk9IkFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuNiI+SWRlYVBhZCAzIGk1PC90ZXh0Pgo8L3N2Zz4=" alt="Lenovo IdeaPad 3 Core i5" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">NEW</div>
         </div>
         <div class="product-body">
@@ -2507,9 +2950,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Laptops" data-name="Dell Latitude Business Laptop i7" onclick="openProductPage('dell-latitude-i7')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://i.dell.com/is/image/DellContent/content/dam/ss2/product-images/dell-client-products/notebooks/latitude-notebooks/14-5000/global-spi/ng/frnt-l-5420-gray-1.psd?fmt=png-alpha&scl=1" alt="Dell Latitude Business Laptop i7" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">💻</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFBMkI0QSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMwMjgwOTAiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5K7PC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPkRlbGw8L3RleHQ+CiAgPHRleHQgeD0iMTUwIiB5PSIxNTgiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBvcGFjaXR5PSIwLjYiPkxhdGl0dWRlIGk3PC90ZXh0Pgo8L3N2Zz4=" alt="Dell Latitude Business Laptop i7" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">BUSINESS</div>
         </div>
         <div class="product-body">
@@ -2523,9 +2965,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Laptops" data-name="HP Pavilion 2-in-1 Touchscreen" onclick="openProductPage('hp-pavilion-2in1')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://ssl-product-images.www8-hp.com/digmedialib/prodimg/knac/c08231626.png" alt="HP Pavilion 2-in-1 Touchscreen" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">💻</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFBMkI0QSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMwMjgwOTAiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5K7PC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPkhQPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTU4IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgb3BhY2l0eT0iMC42Ij5QYXZpbGlvbiB4MzYwPC90ZXh0Pgo8L3N2Zz4=" alt="HP Pavilion 2-in-1 Touchscreen" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:#EFF4FF;color:#2563EB">2-IN-1</div>
         </div>
         <div class="product-body">
@@ -2539,9 +2980,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Laptops" data-name="Refurbished HP EliteBook i5 Ex-UK" onclick="openProductPage('hp-elitebook-refurb')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://ssl-product-images.www8-hp.com/digmedialib/prodimg/knac/c06293257.png" alt="Refurbished HP EliteBook i5 Ex-UK" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">💻</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzJBMUEwQSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3OTU1NDgiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5K7PC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPkhQPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTU4IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgb3BhY2l0eT0iMC42Ij5FbGl0ZUJvb2sgaTU8L3RleHQ+Cjwvc3ZnPg==" alt="Refurbished HP EliteBook i5 Ex-UK" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--amberLt);color:var(--amber)">EX-UK</div>
         </div>
         <div class="product-body">
@@ -2555,9 +2995,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Printers" data-name="Epson EcoTank L3150 WiFi" onclick="openProductPage('epson-l3150')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://www.epson.co.uk/content/dam/epson/main/printers/consumer/L/L3150/product-media/L3150_PRD_05_HR.png" alt="Epson EcoTank L3150 WiFi" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">🖨️</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFBNEEyQSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMyRTdEMzIiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5ao77iPPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPkVwc29uPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTU4IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgb3BhY2l0eT0iMC42Ij5FY29UYW5rIEwzMTUwPC90ZXh0Pgo8L3N2Zz4=" alt="Epson EcoTank L3150 WiFi" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2571,9 +3010,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Printers" data-name="Epson EcoTank L3250 WiFi" onclick="openProductPage('epson-l3250')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://www.epson.co.uk/content/dam/epson/main/printers/consumer/L/L3250/product-media/L3250-product-image-01.png" alt="Epson EcoTank L3250 WiFi" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">🖨️</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFBNEEyQSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMyRTdEMzIiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5ao77iPPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPkVwc29uPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTU4IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgb3BhY2l0eT0iMC42Ij5FY29UYW5rIEwzMjUwPC90ZXh0Pgo8L3N2Zz4=" alt="Epson EcoTank L3250 WiFi" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2587,9 +3025,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Printers" data-name="HP LaserJet Pro M404dn" onclick="openProductPage('hp-laserjet-m404dn')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://ssl-product-images.www8-hp.com/digmedialib/prodimg/knac/c07727260.png" alt="HP LaserJet Pro M404dn" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">🖨️</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFBNEEyQSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMyRTdEMzIiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5ao77iPPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPkhQPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTU4IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgb3BhY2l0eT0iMC42Ij5MYXNlckpldCBNNDA0ZG48L3RleHQ+Cjwvc3ZnPg==" alt="HP LaserJet Pro M404dn" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2603,9 +3040,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Printers" data-name="Canon PIXMA G3411 WiFi CISS" onclick="openProductPage('canon-pixma-g3411')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://www.canon.co.uk/media/G3411_tcm14-1571083.png" alt="Canon PIXMA G3411 WiFi CISS" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">🖨️</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFBNEEyQSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMyRTdEMzIiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5ao77iPPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPkNhbm9uPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTU4IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgb3BhY2l0eT0iMC42Ij5QSVhNQSBHMzQxMTwvdGV4dD4KPC9zdmc+" alt="Canon PIXMA G3411 WiFi CISS" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2619,9 +3055,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Printers" data-name="EPOS Thermal Printer TEP-220" onclick="openProductPage('epos-thermal-tep220')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://m.media-amazon.com/images/I/41JTivUVK5L._AC_SY300_SX300_.jpg" alt="EPOS Thermal Printer TEP-220" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">🖨️</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFBNEEyQSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMyRTdEMzIiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5ao77iPPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPkVQT1M8L3RleHQ+CiAgPHRleHQgeD0iMTUwIiB5PSIxNTgiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBvcGFjaXR5PSIwLjYiPlRoZXJtYWwgVEVQLTIyMDwvdGV4dD4KPC9zdmc+" alt="EPOS Thermal Printer TEP-220" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2635,9 +3070,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Networking" data-name="Starlink Standard Kit" onclick="openProductPage('starlink-kit')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://www.starlink.com/assets/images/section-features-dishy-v2.jpg" alt="Starlink Standard Kit" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">🛰️</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzBBMEEyQSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMxNTY1QzAiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5uw77iPPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPlN0YXJsaW5rPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTU4IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgb3BhY2l0eT0iMC42Ij5TdGFuZGFyZCBLaXQ8L3RleHQ+Cjwvc3ZnPg==" alt="Starlink Standard Kit" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2651,9 +3085,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Networking" data-name="TP-Link EAP225 Access Point" onclick="openProductPage('tplink-eap225')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://static.tp-link.com/EAP225_V3_1.0_02_normal_1509425296670n.jpg" alt="TP-Link EAP225 Access Point" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">📶</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFBMkI2QSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMyNTYzRUIiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5O2PC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPlRQLUxpbms8L3RleHQ+CiAgPHRleHQgeD0iMTUwIiB5PSIxNTgiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBvcGFjaXR5PSIwLjYiPkVBUDIyNSBBUDwvdGV4dD4KPC9zdmc+" alt="TP-Link EAP225 Access Point" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2667,9 +3100,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Networking" data-name="TP-Link 24-Port Gigabit Switch" onclick="openProductPage('tplink-switch-24')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://static.tp-link.com/TL-SG1024D_V13_1.0_01_normal_1561624060571c.jpg" alt="TP-Link 24-Port Gigabit Switch" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">🔀</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFBMkI2QSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMyNTYzRUIiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5SAPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPlRQLUxpbms8L3RleHQ+CiAgPHRleHQgeD0iMTUwIiB5PSIxNTgiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBvcGFjaXR5PSIwLjYiPjI0LVBvcnQgU3dpdGNoPC90ZXh0Pgo8L3N2Zz4=" alt="TP-Link 24-Port Gigabit Switch" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2683,9 +3115,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Networking" data-name="Mikrotik hEX Router RB750Gr3" onclick="openProductPage('mikrotik-hex-rb750')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://i.mt.lv/cdn/rb_images/1283,1287,1288,1289,1291/rb750gr3/1.png" alt="Mikrotik hEX Router RB750Gr3" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">🔌</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFBMkI2QSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMyNTYzRUIiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5SMPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPk1pa3JvdGlrPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTU4IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgb3BhY2l0eT0iMC42Ij5oRVggUkI3NTBHcjM8L3RleHQ+Cjwvc3ZnPg==" alt="Mikrotik hEX Router RB750Gr3" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2699,9 +3130,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Networking" data-name="Cat6 Ethernet Patch Cord 1m" onclick="openProductPage('cat6-patch-cord')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://m.media-amazon.com/images/I/61lMfuWJmXL._AC_SL1500_.jpg" alt="Cat6 Ethernet Patch Cord 1m" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">🔶</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFBMkI2QSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMyNTYzRUIiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5S2PC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPkNhdDY8L3RleHQ+CiAgPHRleHQgeD0iMTUwIiB5PSIxNTgiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBvcGFjaXR5PSIwLjYiPlVUUCBQYXRjaCBDb3JkPC90ZXh0Pgo8L3N2Zz4=" alt="Cat6 Ethernet Patch Cord 1m" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2715,9 +3145,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Networking" data-name="TP-Link 24-Port Patch Panel" onclick="openProductPage('tplink-patchpanel-24')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://static.tp-link.com/TL-WA7510N_V2_1.0_01_normal_1490084696946n.jpg" alt="TP-Link 24-Port Patch Panel" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">🔲</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFBMkI2QSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMyNTYzRUIiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5SyPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPlRQLUxpbms8L3RleHQ+CiAgPHRleHQgeD0iMTUwIiB5PSIxNTgiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBvcGFjaXR5PSIwLjYiPlBhdGNoIFBhbmVsIENhdDY8L3RleHQ+Cjwvc3ZnPg==" alt="TP-Link 24-Port Patch Panel" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2731,9 +3160,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="CCTV" data-name="Hikvision 4MP IP Dome Camera" onclick="openProductPage('hikvision-4mp-dome')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://www.hikvision.com/content/dam/hikvision/en/marketing/image/latest-image/2021/network-cameras/f5-series-fixed-dome-cameras/DS-2CD2143G2-I-540.png" alt="Hikvision 4MP IP Dome Camera" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">📷</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzJBMUE0QSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM2QTFCOUEiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5O3PC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPkhpa3Zpc2lvbjwvdGV4dD4KICA8dGV4dCB4PSIxNTAiIHk9IjE1OCIgZm9udC1mYW1pbHk9IkFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuNiI+NE1QIERvbWUgQ2FtPC90ZXh0Pgo8L3N2Zz4=" alt="Hikvision 4MP IP Dome Camera" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2747,9 +3175,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="CCTV" data-name="Dahua 8-Channel NVR 4K" onclick="openProductPage('dahua-8ch-nvr')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://www.dahuasecurity.com/asset/upload/uploads/soft/20220526/1653557659.png" alt="Dahua 8-Channel NVR 4K" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">💾</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzJBMUE0QSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM2QTFCOUEiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5K+PC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPkRhaHVhPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTU4IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgb3BhY2l0eT0iMC42Ij44Q2ggTlZSIDRLPC90ZXh0Pgo8L3N2Zz4=" alt="Dahua 8-Channel NVR 4K" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2763,9 +3190,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="CCTV" data-name="Hikvision 4-Camera CCTV Kit" onclick="openProductPage('hikvision-4cam-kit')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://www.hikvision.com/content/dam/hikvision/en/marketing/image/latest-image/2021/network-cameras/f5-series-fixed-dome-cameras/DS-2CD2143G2-I-540.png" alt="Hikvision 4-Camera CCTV Kit" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">🎥</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzJBMUE0QSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM2QTFCOUEiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn46lPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPkhpa3Zpc2lvbjwvdGV4dD4KICA8dGV4dCB4PSIxNTAiIHk9IjE1OCIgZm9udC1mYW1pbHk9IkFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuNiI+NC1DYW0gQ0NUViBLaXQ8L3RleHQ+Cjwvc3ZnPg==" alt="Hikvision 4-Camera CCTV Kit" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:#EFF4FF;color:#2563EB">KIT</div>
         </div>
         <div class="product-body">
@@ -2779,9 +3205,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Storage" data-name="Seagate 1TB External Hard Drive" onclick="openProductPage('seagate-1tb-external')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://www.seagate.com/www-content/product-content/backup-plus-family/backup-plus-slim/en-us/images/backup-plus-slim-black-ls.png" alt="Seagate 1TB External Hard Drive" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">💿</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFBM0ExQSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMyRTdEMzIiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5K/PC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPlNlYWdhdGU8L3RleHQ+CiAgPHRleHQgeD0iMTUwIiB5PSIxNTgiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBvcGFjaXR5PSIwLjYiPjFUQiBFeHRlcm5hbCBIREQ8L3RleHQ+Cjwvc3ZnPg==" alt="Seagate 1TB External Hard Drive" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2795,9 +3220,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Storage" data-name="Kingston A400 256GB SSD" onclick="openProductPage('kingston-256gb-ssd')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://www.kingston.com/dataSheets/SA400S37_256G_en.pdf" alt="Kingston A400 256GB SSD" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">💽</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFBM0ExQSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMyRTdEMzIiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5K9PC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPktpbmdzdG9uPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTU4IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgb3BhY2l0eT0iMC42Ij5BNDAwIDI1NkdCIFNTRDwvdGV4dD4KPC9zdmc+" alt="Kingston A400 256GB SSD" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2811,9 +3235,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Storage" data-name="SanDisk 128GB Flash Drive USB 3.0" onclick="openProductPage('sandisk-128gb-flash')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://m.media-amazon.com/images/I/41GFE0nFVRL._AC_SX355_.jpg" alt="SanDisk 128GB Flash Drive USB 3.0" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">🔑</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFBM0ExQSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMyRTdEMzIiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5SRPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPlNhbkRpc2s8L3RleHQ+CiAgPHRleHQgeD0iMTUwIiB5PSIxNTgiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBvcGFjaXR5PSIwLjYiPjEyOEdCIFVTQiAzLjA8L3RleHQ+Cjwvc3ZnPg==" alt="SanDisk 128GB Flash Drive USB 3.0" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2827,9 +3250,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Storage" data-name="Kingston 8GB DDR4 RAM Laptop" onclick="openProductPage('kingston-8gb-ram')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://www.kingston.com/dataSheets/KVR32S22S8_8_en.pdf" alt="Kingston 8GB DDR4 RAM Laptop" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">🧩</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFBM0ExQSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMyRTdEMzIiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn6epPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPktpbmdzdG9uPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTU4IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgb3BhY2l0eT0iMC42Ij44R0IgRERSNCBSQU08L3RleHQ+Cjwvc3ZnPg==" alt="Kingston 8GB DDR4 RAM Laptop" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2843,9 +3265,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Accessories" data-name="Logitech MK270 Wireless Combo" onclick="openProductPage('logitech-mk270')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://resource.logitech.com/w_692,c_limit,q_auto,f_auto,dpr_1.0/d_transparent.gif/content/dam/logitech/en/products/keyboards/mk270-wireless/mk270r_wireless_keyboard_and_mouse_combo.png" alt="Logitech MK270 Wireless Combo" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">⌨️</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzRBMkExQSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNCRjM2MEMiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7ijKjvuI88L3RleHQ+CiAgPHRleHQgeD0iMTUwIiB5PSIxMzUiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjE1IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgb3BhY2l0eT0iMC45NSI+TG9naXRlY2g8L3RleHQ+CiAgPHRleHQgeD0iMTUwIiB5PSIxNTgiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBvcGFjaXR5PSIwLjYiPk1LMjcwIFdpcmVsZXNzPC90ZXh0Pgo8L3N2Zz4=" alt="Logitech MK270 Wireless Combo" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2859,9 +3280,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Accessories" data-name="Logitech C920 HD Pro Webcam" onclick="openProductPage('logitech-c920')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://resource.logitech.com/w_692,c_limit,q_auto,f_auto,dpr_1.0/d_transparent.gif/content/dam/logitech/en/products/video-conferencing/c920s-pro-hd-webcam/gallery/c920s-pro-hd-webcam-gallery-1.png" alt="Logitech C920 HD Pro Webcam" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">📸</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzRBMkExQSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNCRjM2MEMiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5O4PC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPkxvZ2l0ZWNoPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTU4IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgb3BhY2l0eT0iMC42Ij5DOTIwIEhEIFdlYmNhbTwvdGV4dD4KPC9zdmc+" alt="Logitech C920 HD Pro Webcam" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2875,9 +3295,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Accessories" data-name="Dell 24" FHD Monitor E2422H" onclick="openProductPage('dell-24-monitor')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://i.dell.com/is/image/DellContent/content/dam/ss2/product-images/dell-client-products/peripherals/monitors/e-series/e2422h/media-gallery/monitor-e2422h-gallery-1.psd?fmt=jpg&wid=800&hei=600" alt="Dell 24" FHD Monitor E2422H" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">🖥️</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzRBMkExQSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNCRjM2MEMiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5al77iPPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPkRlbGw8L3RleHQ+CiAgPHRleHQgeD0iMTUwIiB5PSIxNTgiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBvcGFjaXR5PSIwLjYiPjI0IiBFMjQyMkg8L3RleHQ+Cjwvc3ZnPg==" alt="Dell 24" FHD Monitor E2422H" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2891,9 +3310,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Accessories" data-name="Epson EB-X51 XGA Projector" onclick="openProductPage('epson-eb-x51')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://www.epson.co.uk/content/dam/epson/main/projectors/EB-X51/product-media/EPSON_EB-X51_Product_Feature_Image.png" alt="Epson EB-X51 XGA Projector" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">📽️</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzRBMkExQSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNCRjM2MEMiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5O977iPPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPkVwc29uPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTU4IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgb3BhY2l0eT0iMC42Ij5FQi1YNTEgUHJvamVjdG9yPC90ZXh0Pgo8L3N2Zz4=" alt="Epson EB-X51 XGA Projector" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2907,9 +3325,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Phones" data-name="Samsung Galaxy A15 4G" onclick="openProductPage('samsung-a15')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://images.samsung.com/is/image/samsung/p6pim/africa_en/2401/gallery/africa-en-galaxy-a15-sm-a155fzkdafa-thumb-539037584?$720_576_PNG$" alt="Samsung Galaxy A15 4G" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">📱</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFBMUE0QSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM0NTI3QTAiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5OxPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPlNhbXN1bmc8L3RleHQ+CiAgPHRleHQgeD0iMTUwIiB5PSIxNTgiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBvcGFjaXR5PSIwLjYiPkdhbGF4eSBBMTUgNEc8L3RleHQ+Cjwvc3ZnPg==" alt="Samsung Galaxy A15 4G" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">NEW</div>
         </div>
         <div class="product-body">
@@ -2923,9 +3340,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Phones" data-name="Lenovo Tab M10 Plus Tablet" onclick="openProductPage('lenovo-tab-m10')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://p3-ofp.static.pub/fes/cms/2022/09/02/z5g9vj3vv3u6ntrpcixhxqxlm5n4z0750254.png" alt="Lenovo Tab M10 Plus Tablet" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">📟</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFBMUE0QSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM0NTI3QTAiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5OfPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPkxlbm92bzwvdGV4dD4KICA8dGV4dCB4PSIxNTAiIHk9IjE1OCIgZm9udC1mYW1pbHk9IkFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuNiI+VGFiIE0xMCBQbHVzPC90ZXh0Pgo8L3N2Zz4=" alt="Lenovo Tab M10 Plus Tablet" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2939,9 +3355,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Office" data-name="Fellowes SB-89Ci Paper Shredder" onclick="openProductPage('fellowes-shredder')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://m.media-amazon.com/images/I/61y9mUxQF5L._AC_SL1000_.jpg" alt="Fellowes SB-89Ci Paper Shredder" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">🗑️</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzNBMUExQSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNDNjI4MjgiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5eR77iPPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPkZlbGxvd2VzPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTU4IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgb3BhY2l0eT0iMC42Ij5TQi04OUNpIFNocmVkZGVyPC90ZXh0Pgo8L3N2Zz4=" alt="Fellowes SB-89Ci Paper Shredder" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2955,9 +3370,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Office" data-name="Bill Counter Machine" onclick="openProductPage('bill-counter')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://m.media-amazon.com/images/I/61V8tqKf2xL._AC_SL1000_.jpg" alt="Bill Counter Machine" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">💵</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzNBMUExQSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNDNjI4MjgiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5K1PC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPkJpbGw8L3RleHQ+CiAgPHRleHQgeD0iMTUwIiB5PSIxNTgiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBvcGFjaXR5PSIwLjYiPkNvdW50ZXIgTWFjaGluZTwvdGV4dD4KPC9zdmc+" alt="Bill Counter Machine" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2971,9 +3385,8 @@ function enquireProduct(name) {
         </div>
       </div>
       <div class="product-card" data-cat="Office" data-name="A4 Laminator Pouching Machine" onclick="openProductPage('laminator-a4')">
-        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden">
-          <img src="https://m.media-amazon.com/images/I/51jDhMsXuHL._AC_SL1000_.jpg" alt="A4 Laminator Pouching Machine" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-          <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:48px;background:var(--bg)">📄</div>
+        <div class="product-thumb" style="background:#fff;padding:0;overflow:hidden;position:relative">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzNBMUExQSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNDNjI4MjgiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2MCIgcng9IjEyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDcpIi8+CiAgPHRleHQgeD0iMTUwIiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj7wn5OEPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTM1IiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuOTUiPkxhbWluYXRvcjwvdGV4dD4KICA8dGV4dCB4PSIxNTAiIHk9IjE1OCIgZm9udC1mYW1pbHk9IkFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIG9wYWNpdHk9IjAuNiI+QTQgUG91Y2hpbmc8L3RleHQ+Cjwvc3ZnPg==" alt="A4 Laminator Pouching Machine" style="width:100%;height:160px;object-fit:contain;padding:8px;display:block">
           <div class="product-badge" style="background:var(--mintLt);color:var(--teal)">IN STOCK</div>
         </div>
         <div class="product-body">
@@ -2988,6 +3401,8 @@ function enquireProduct(name) {
       </div>
 
     </div><!-- end shopGrid -->
+    <div class="shop-pagination" id="shopPagination"></div>
+    <div class="pg-info" id="shopPgInfo" style="text-align:center;margin-top:8px"></div>
 
         <!-- EMPTY STATE -->
     <div id="shop-empty" style="display:none;text-align:center;padding:48px 24px">
@@ -3108,7 +3523,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://ssl-product-images.www8-hp.com/digmedialib/prodimg/knac/c08136707.png" alt="HP 15s Core i5 Notebook" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://ssl-product-images.www8-hp.com/digmedialib/prodimg/knac/c08136707.png" alt="HP 15s Core i5 Notebook" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">💻</div>
       </div>
       <!-- Details -->
@@ -3153,7 +3568,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://ssl-product-images.www8-hp.com/digmedialib/prodimg/knac/c08136707.png" alt="HP 15s Core i3 College Laptop" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://ssl-product-images.www8-hp.com/digmedialib/prodimg/knac/c08136707.png" alt="HP 15s Core i3 College Laptop" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">💻</div>
       </div>
       <!-- Details -->
@@ -3198,7 +3613,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://p3-ofp.static.pub/ShareResource/na/categoryPics/laptops-IdeaPad-category-hero.png" alt="Lenovo IdeaPad 3 Core i5" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://p3-ofp.static.pub/ShareResource/na/categoryPics/laptops-IdeaPad-category-hero.png" alt="Lenovo IdeaPad 3 Core i5" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">💻</div>
       </div>
       <!-- Details -->
@@ -3243,7 +3658,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://i.dell.com/is/image/DellContent/content/dam/ss2/product-images/dell-client-products/notebooks/latitude-notebooks/14-5000/global-spi/ng/frnt-l-5420-gray-1.psd?fmt=png-alpha&scl=1" alt="Dell Latitude Business Laptop i7" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://i.dell.com/is/image/DellContent/content/dam/ss2/product-images/dell-client-products/notebooks/latitude-notebooks/14-5000/global-spi/ng/frnt-l-5420-gray-1.psd?fmt=png-alpha&scl=1" alt="Dell Latitude Business Laptop i7" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">💻</div>
       </div>
       <!-- Details -->
@@ -3288,7 +3703,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://ssl-product-images.www8-hp.com/digmedialib/prodimg/knac/c08231626.png" alt="HP Pavilion 2-in-1 Touchscreen" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://ssl-product-images.www8-hp.com/digmedialib/prodimg/knac/c08231626.png" alt="HP Pavilion 2-in-1 Touchscreen" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">💻</div>
       </div>
       <!-- Details -->
@@ -3333,7 +3748,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://ssl-product-images.www8-hp.com/digmedialib/prodimg/knac/c06293257.png" alt="Refurbished HP EliteBook i5 Ex-UK" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://ssl-product-images.www8-hp.com/digmedialib/prodimg/knac/c06293257.png" alt="Refurbished HP EliteBook i5 Ex-UK" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">💻</div>
       </div>
       <!-- Details -->
@@ -3378,7 +3793,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://www.epson.co.uk/content/dam/epson/main/printers/consumer/L/L3150/product-media/L3150_PRD_05_HR.png" alt="Epson EcoTank L3150 WiFi" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://www.epson.co.uk/content/dam/epson/main/printers/consumer/L/L3150/product-media/L3150_PRD_05_HR.png" alt="Epson EcoTank L3150 WiFi" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">🖨️</div>
       </div>
       <!-- Details -->
@@ -3423,7 +3838,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://www.epson.co.uk/content/dam/epson/main/printers/consumer/L/L3250/product-media/L3250-product-image-01.png" alt="Epson EcoTank L3250 WiFi" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://www.epson.co.uk/content/dam/epson/main/printers/consumer/L/L3250/product-media/L3250-product-image-01.png" alt="Epson EcoTank L3250 WiFi" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">🖨️</div>
       </div>
       <!-- Details -->
@@ -3468,7 +3883,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://ssl-product-images.www8-hp.com/digmedialib/prodimg/knac/c07727260.png" alt="HP LaserJet Pro M404dn" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://ssl-product-images.www8-hp.com/digmedialib/prodimg/knac/c07727260.png" alt="HP LaserJet Pro M404dn" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">🖨️</div>
       </div>
       <!-- Details -->
@@ -3513,7 +3928,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://www.canon.co.uk/media/G3411_tcm14-1571083.png" alt="Canon PIXMA G3411 WiFi CISS" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://www.canon.co.uk/media/G3411_tcm14-1571083.png" alt="Canon PIXMA G3411 WiFi CISS" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">🖨️</div>
       </div>
       <!-- Details -->
@@ -3558,7 +3973,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://m.media-amazon.com/images/I/41JTivUVK5L._AC_SY300_SX300_.jpg" alt="EPOS Thermal Printer TEP-220" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://m.media-amazon.com/images/I/41JTivUVK5L._AC_SY300_SX300_.jpg" alt="EPOS Thermal Printer TEP-220" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">🖨️</div>
       </div>
       <!-- Details -->
@@ -3603,7 +4018,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://www.starlink.com/assets/images/section-features-dishy-v2.jpg" alt="Starlink Standard Kit" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://www.starlink.com/assets/images/section-features-dishy-v2.jpg" alt="Starlink Standard Kit" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">🛰️</div>
       </div>
       <!-- Details -->
@@ -3648,7 +4063,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://static.tp-link.com/EAP225_V3_1.0_02_normal_1509425296670n.jpg" alt="TP-Link EAP225 Access Point" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://static.tp-link.com/EAP225_V3_1.0_02_normal_1509425296670n.jpg" alt="TP-Link EAP225 Access Point" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">📶</div>
       </div>
       <!-- Details -->
@@ -3693,7 +4108,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://static.tp-link.com/TL-SG1024D_V13_1.0_01_normal_1561624060571c.jpg" alt="TP-Link 24-Port Gigabit Switch" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://static.tp-link.com/TL-SG1024D_V13_1.0_01_normal_1561624060571c.jpg" alt="TP-Link 24-Port Gigabit Switch" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">🔀</div>
       </div>
       <!-- Details -->
@@ -3738,7 +4153,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://i.mt.lv/cdn/rb_images/1283,1287,1288,1289,1291/rb750gr3/1.png" alt="Mikrotik hEX Router RB750Gr3" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://i.mt.lv/cdn/rb_images/1283,1287,1288,1289,1291/rb750gr3/1.png" alt="Mikrotik hEX Router RB750Gr3" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">🔌</div>
       </div>
       <!-- Details -->
@@ -3783,7 +4198,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://m.media-amazon.com/images/I/61lMfuWJmXL._AC_SL1500_.jpg" alt="Cat6 Ethernet Patch Cord 1m" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://m.media-amazon.com/images/I/61lMfuWJmXL._AC_SL1500_.jpg" alt="Cat6 Ethernet Patch Cord 1m" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">🔶</div>
       </div>
       <!-- Details -->
@@ -3828,7 +4243,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://static.tp-link.com/TL-WA7510N_V2_1.0_01_normal_1490084696946n.jpg" alt="TP-Link 24-Port Patch Panel" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://static.tp-link.com/TL-WA7510N_V2_1.0_01_normal_1490084696946n.jpg" alt="TP-Link 24-Port Patch Panel" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">🔲</div>
       </div>
       <!-- Details -->
@@ -3873,7 +4288,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://www.hikvision.com/content/dam/hikvision/en/marketing/image/latest-image/2021/network-cameras/f5-series-fixed-dome-cameras/DS-2CD2143G2-I-540.png" alt="Hikvision 4MP IP Dome Camera" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://www.hikvision.com/content/dam/hikvision/en/marketing/image/latest-image/2021/network-cameras/f5-series-fixed-dome-cameras/DS-2CD2143G2-I-540.png" alt="Hikvision 4MP IP Dome Camera" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">📷</div>
       </div>
       <!-- Details -->
@@ -3918,7 +4333,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://www.dahuasecurity.com/asset/upload/uploads/soft/20220526/1653557659.png" alt="Dahua 8-Channel NVR 4K" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://www.dahuasecurity.com/asset/upload/uploads/soft/20220526/1653557659.png" alt="Dahua 8-Channel NVR 4K" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">💾</div>
       </div>
       <!-- Details -->
@@ -3963,7 +4378,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://www.hikvision.com/content/dam/hikvision/en/marketing/image/latest-image/2021/network-cameras/f5-series-fixed-dome-cameras/DS-2CD2143G2-I-540.png" alt="Hikvision 4-Camera CCTV Kit" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://www.hikvision.com/content/dam/hikvision/en/marketing/image/latest-image/2021/network-cameras/f5-series-fixed-dome-cameras/DS-2CD2143G2-I-540.png" alt="Hikvision 4-Camera CCTV Kit" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">🎥</div>
       </div>
       <!-- Details -->
@@ -4008,7 +4423,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://www.seagate.com/www-content/product-content/backup-plus-family/backup-plus-slim/en-us/images/backup-plus-slim-black-ls.png" alt="Seagate 1TB External Hard Drive" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://www.seagate.com/www-content/product-content/backup-plus-family/backup-plus-slim/en-us/images/backup-plus-slim-black-ls.png" alt="Seagate 1TB External Hard Drive" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">💿</div>
       </div>
       <!-- Details -->
@@ -4053,7 +4468,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://www.kingston.com/dataSheets/SA400S37_256G_en.pdf" alt="Kingston A400 256GB SSD" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://www.kingston.com/dataSheets/SA400S37_256G_en.pdf" alt="Kingston A400 256GB SSD" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">💽</div>
       </div>
       <!-- Details -->
@@ -4098,7 +4513,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://m.media-amazon.com/images/I/41GFE0nFVRL._AC_SX355_.jpg" alt="SanDisk 128GB Flash Drive USB 3.0" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://m.media-amazon.com/images/I/41GFE0nFVRL._AC_SX355_.jpg" alt="SanDisk 128GB Flash Drive USB 3.0" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">🔑</div>
       </div>
       <!-- Details -->
@@ -4143,7 +4558,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://www.kingston.com/dataSheets/KVR32S22S8_8_en.pdf" alt="Kingston 8GB DDR4 RAM Laptop" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://www.kingston.com/dataSheets/KVR32S22S8_8_en.pdf" alt="Kingston 8GB DDR4 RAM Laptop" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">🧩</div>
       </div>
       <!-- Details -->
@@ -4188,7 +4603,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://resource.logitech.com/w_692,c_limit,q_auto,f_auto,dpr_1.0/d_transparent.gif/content/dam/logitech/en/products/keyboards/mk270-wireless/mk270r_wireless_keyboard_and_mouse_combo.png" alt="Logitech MK270 Wireless Combo" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://resource.logitech.com/w_692,c_limit,q_auto,f_auto,dpr_1.0/d_transparent.gif/content/dam/logitech/en/products/keyboards/mk270-wireless/mk270r_wireless_keyboard_and_mouse_combo.png" alt="Logitech MK270 Wireless Combo" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">⌨️</div>
       </div>
       <!-- Details -->
@@ -4233,7 +4648,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://resource.logitech.com/w_692,c_limit,q_auto,f_auto,dpr_1.0/d_transparent.gif/content/dam/logitech/en/products/video-conferencing/c920s-pro-hd-webcam/gallery/c920s-pro-hd-webcam-gallery-1.png" alt="Logitech C920 HD Pro Webcam" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://resource.logitech.com/w_692,c_limit,q_auto,f_auto,dpr_1.0/d_transparent.gif/content/dam/logitech/en/products/video-conferencing/c920s-pro-hd-webcam/gallery/c920s-pro-hd-webcam-gallery-1.png" alt="Logitech C920 HD Pro Webcam" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">📸</div>
       </div>
       <!-- Details -->
@@ -4278,7 +4693,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://i.dell.com/is/image/DellContent/content/dam/ss2/product-images/dell-client-products/peripherals/monitors/e-series/e2422h/media-gallery/monitor-e2422h-gallery-1.psd?fmt=jpg&wid=800&hei=600" alt="Dell 24" FHD Monitor E2422H" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://i.dell.com/is/image/DellContent/content/dam/ss2/product-images/dell-client-products/peripherals/monitors/e-series/e2422h/media-gallery/monitor-e2422h-gallery-1.psd?fmt=jpg&wid=800&hei=600" alt="Dell 24" FHD Monitor E2422H" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">🖥️</div>
       </div>
       <!-- Details -->
@@ -4323,7 +4738,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://www.epson.co.uk/content/dam/epson/main/projectors/EB-X51/product-media/EPSON_EB-X51_Product_Feature_Image.png" alt="Epson EB-X51 XGA Projector" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://www.epson.co.uk/content/dam/epson/main/projectors/EB-X51/product-media/EPSON_EB-X51_Product_Feature_Image.png" alt="Epson EB-X51 XGA Projector" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">📽️</div>
       </div>
       <!-- Details -->
@@ -4368,7 +4783,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://images.samsung.com/is/image/samsung/p6pim/africa_en/2401/gallery/africa-en-galaxy-a15-sm-a155fzkdafa-thumb-539037584?$720_576_PNG$" alt="Samsung Galaxy A15 4G" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://images.samsung.com/is/image/samsung/p6pim/africa_en/2401/gallery/africa-en-galaxy-a15-sm-a155fzkdafa-thumb-539037584?$720_576_PNG$" alt="Samsung Galaxy A15 4G" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">📱</div>
       </div>
       <!-- Details -->
@@ -4413,7 +4828,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://p3-ofp.static.pub/fes/cms/2022/09/02/z5g9vj3vv3u6ntrpcixhxqxlm5n4z0750254.png" alt="Lenovo Tab M10 Plus Tablet" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://p3-ofp.static.pub/fes/cms/2022/09/02/z5g9vj3vv3u6ntrpcixhxqxlm5n4z0750254.png" alt="Lenovo Tab M10 Plus Tablet" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">📟</div>
       </div>
       <!-- Details -->
@@ -4458,7 +4873,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://m.media-amazon.com/images/I/61y9mUxQF5L._AC_SL1000_.jpg" alt="Fellowes SB-89Ci Paper Shredder" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://m.media-amazon.com/images/I/61y9mUxQF5L._AC_SL1000_.jpg" alt="Fellowes SB-89Ci Paper Shredder" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">🗑️</div>
       </div>
       <!-- Details -->
@@ -4503,7 +4918,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://m.media-amazon.com/images/I/61V8tqKf2xL._AC_SL1000_.jpg" alt="Bill Counter Machine" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://m.media-amazon.com/images/I/61V8tqKf2xL._AC_SL1000_.jpg" alt="Bill Counter Machine" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">💵</div>
       </div>
       <!-- Details -->
@@ -4548,7 +4963,7 @@ function enquireProduct(name) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
       <!-- Image -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:320px">
-        <img src="https://m.media-amazon.com/images/I/51jDhMsXuHL._AC_SL1000_.jpg" alt="A4 Laminator Pouching Machine" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <img src="https://m.media-amazon.com/images/I/51jDhMsXuHL._AC_SL1000_.jpg" alt="A4 Laminator Pouching Machine" style="max-width:100%;max-height:300px;object-fit:contain" onerror="this.remove()">
         <div style="display:none;font-size:80px;text-align:center">📄</div>
       </div>
       <!-- Details -->
@@ -4584,5 +4999,121 @@ function enquireProduct(name) {
     <div class="footer-copy" style="padding-top:20px;max-width:1100px;margin:0 auto">© 2025 Nemitech Solutions · Digital Systems & ICT Consultancy · Nairobi, Kenya</div>
   </footer>
 </div>
+
+<div id="pg-manage-shop" class="page">
+  <div class="page-hdr" style="background:linear-gradient(135deg,var(--navyDk),var(--navy))">
+    <div class="page-hdr-inner">
+      <div class="breadcrumb">Home / <span onclick="showPage('shop')" style="cursor:pointer;color:var(--mint)">Shop</span> / Manage</div>
+      <div class="page-hdr-title">⚙️ Shop Product Manager</div>
+      <div class="page-hdr-sub">Add new products, upload images, and manage your ICT shop catalogue</div>
+    </div>
+  </div>
+  <div style="max-width:920px;margin:0 auto;padding:32px;">
+
+    <div class="admin-form" style="margin-bottom:28px">
+      <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:4px">➕ Add New Product</div>
+      <div style="font-size:12px;color:var(--mid);margin-bottom:18px">Products you add here are saved in the browser and appear in the shop instantly.</div>
+      <div class="admin-grid">
+        <div class="field"><label>Product Name *</label><input id="ap-name" placeholder="e.g. Logitech MX Master 3 Mouse"></div>
+        <div class="field"><label>Category *</label>
+          <select id="ap-cat">
+            <option value="">Select category</option>
+            <option value="Laptops">💻 Laptops</option>
+            <option value="Printers">🖨️ Printers &amp; Scanners</option>
+            <option value="Networking">🔌 Networking</option>
+            <option value="CCTV">📷 CCTV &amp; Surveillance</option>
+            <option value="Storage">💾 Storage &amp; RAM</option>
+            <option value="Accessories">🖱️ Accessories</option>
+            <option value="Phones">📱 Phones &amp; Tablets</option>
+            <option value="Office">🏢 Office Solutions</option>
+          </select>
+        </div>
+        <div class="field"><label>Price (KES) *</label><input id="ap-price" type="number" min="1" placeholder="e.g. 14500"></div>
+        <div class="field"><label>Badge</label><input id="ap-badge" placeholder="NEW · IN STOCK · BUNDLE · EX-UK"></div>
+        <div class="field" style="grid-column:1/-1"><label>Short Specification *</label><input id="ap-spec" placeholder="e.g. Dual-band WiFi 6 · Ergonomic design · USB-C · 70-day battery"></div>
+        <div class="field" style="grid-column:1/-1">
+          <label>Product Image URL <span style="font-size:10px;color:var(--lt);font-weight:400">— right-click any product image online &rarr; Copy image address &rarr; paste here</span></label>
+          <input id="ap-img" placeholder="https://ke.jumia.is/... or any direct image URL" oninput="adminPreviewImg(this.value)">
+          <div style="margin-top:8px;display:flex;gap:10px;align-items:center">
+            <img id="ap-preview" style="width:80px;height:60px;object-fit:contain;background:var(--bg);border:1.5px dashed var(--border);border-radius:8px;display:none" onerror="this.style.display='none'">
+            <div style="font-size:10px;color:var(--lt)">Preview appears here · Leave blank to use category icon</div>
+          </div>
+        </div>
+        <div class="field" style="grid-column:1/-1"><label>Supplier / Product Page URL (optional)</label><input id="ap-url" placeholder="https://nairobicomputershop.co.ke/catalogue/..."></div>
+        <div class="field" style="grid-column:1/-1">
+          <label>Full Specifications <span style="font-size:10px;color:var(--lt);font-weight:400">— one per line as Label: Value</span></label>
+          <textarea id="ap-specs" rows="5" placeholder="Processor: Intel Core i5&#10;RAM: 8GB DDR4&#10;Storage: 512GB SSD&#10;Display: 15.6 inch FHD&#10;OS: Windows 11 Home"></textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px;align-items:center">
+        <button class="btn btn-teal" onclick="adminAddProduct()">➕ Add to Shop</button>
+        <button class="btn btn-outline btn-sm" onclick="adminClearForm()">Clear</button>
+        <div id="ap-msg" style="font-size:12px;display:none;margin-left:8px"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="font-size:15px;font-weight:700;color:var(--navy)">Your Added Products (<span id="custom-count">0</span>)</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline btn-sm" onclick="adminExport()">⬇ Export</button>
+        <button class="btn btn-sm" style="background:var(--redLt);color:var(--red);border:1px solid var(--red)" onclick="adminClearAll()">🗑️ Clear All</button>
+      </div>
+    </div>
+    <input placeholder="🔍 Filter your products..." oninput="adminFilter(this.value)" style="width:100%;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:9px 14px;font-size:12px;margin-bottom:12px">
+    <div id="admin-product-list"></div>
+
+    <div style="margin-top:32px;padding:20px;background:var(--mintLt);border:1px solid var(--teal);border-radius:12px">
+      <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px">💡 How to add product photos</div>
+      <div style="font-size:11px;color:var(--mid);line-height:1.8">
+        <strong>Option 1 — From Jumia Kenya:</strong> Find the product on ke.jumia.is → right-click the product photo → Copy Image Address → paste in Image URL field above.<br>
+        <strong>Option 2 — From any website:</strong> Find a product image on the supplier's site → right-click → Copy Image Address → paste above.<br>
+        <strong>Option 3 — Upload your own:</strong> Upload your photo to <a href="https://imgur.com" target="_blank" style="color:var(--teal)">imgur.com</a> for free → copy the direct image link → paste above.<br>
+        <strong>Option 4 — From Google Images:</strong> Search the product → click image → click "Open image in new tab" → copy the URL → paste above.
+      </div>
+    </div>
+  </div>
+
+    <!-- ═══ COMMUNICATIONS LOG ═══════════════════════════════════ -->
+    <div style="margin-top:48px;border-top:2px solid var(--border);padding-top:32px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+        <div>
+          <div style="font-size:18px;font-weight:800;color:var(--navy)">📬 Communications Log</div>
+          <div style="font-size:12px;color:var(--mid);margin-top:3px">All form submissions from Contact, Quote, and Project Brief forms — <span id="comms-count" style="font-weight:700;color:var(--teal)">0</span> records</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-teal btn-sm" onclick="commsExportExcel()">⬇ Export to Excel</button>
+          <button class="btn btn-sm" style="background:var(--redLt);color:var(--red);border:1px solid var(--red)" onclick="commsClearAll()">🗑️ Clear All</button>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden">
+        <table style="width:100%;border-collapse:collapse">
+          <thead>
+            <tr style="background:var(--navyDk)">
+              <th style="padding:10px 14px;text-align:left;font-size:10px;color:rgba(255,255,255,.6);font-weight:600">DATE</th>
+              <th style="padding:10px 14px;text-align:left;font-size:10px;color:rgba(255,255,255,.6);font-weight:600">TYPE</th>
+              <th style="padding:10px 14px;text-align:left;font-size:10px;color:rgba(255,255,255,.6);font-weight:600">NAME</th>
+              <th style="padding:10px 14px;text-align:left;font-size:10px;color:rgba(255,255,255,.6);font-weight:600">CONTACT</th>
+              <th style="padding:10px 14px;text-align:left;font-size:10px;color:rgba(255,255,255,.6);font-weight:600">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody id="comms-tbody">
+            <tr><td colspan="5" style="text-align:center;padding:32px;color:var(--lt)">No submissions yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:16px;padding:16px;background:var(--mintLt);border:1px solid var(--teal);border-radius:10px;font-size:11px;color:var(--mid);line-height:1.8">
+        <strong style="color:var(--navy)">💡 How this works:</strong> Every time someone submits a Contact, Quote, or Project form on your website, the submission is saved here automatically. Click <strong>Export to Excel</strong> to download all records as a spreadsheet. Each submission also triggers a PDF receipt download for the client.
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-copy" style="padding-top:20px;max-width:1100px;margin:0 auto">© 2025 Nemitech Solutions · Shop Manager</div>
+  </footer>
+</div>
+
 </body>
 </html>
